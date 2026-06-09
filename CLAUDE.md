@@ -52,9 +52,10 @@ Cubit → UseCase → Repository → (DataSource?)
 - Repositories call datasources **only when there are multiple data sources** (e.g. Firestore + local Hive cache). If the repository talks to a single source, it calls it directly — no datasource abstraction needed.
 
 ### Domain
-- Entities are pure Dart classes — no `toJson`/`fromJson`.
+- Entities are pure Dart classes — no `toJson`/`fromJson`. Name them with the `Entity` suffix (e.g. `NoteEntity`).
 - Use cases receive dependencies via constructor (no service locator in domain).
-- Return `Either<Failure, T>` (`package:dartz` or equivalent).
+- Use cases expose an `execute` method with named parameters — no `call`, no separate `Params` class.
+- Return `Result<T>` (custom sealed class with `Success<T>` and `Failure<T>` in `core/result/result.dart`).
 
 ### Data
 - Models extend or map to entities. They own serialization logic.
