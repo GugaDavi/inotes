@@ -27,6 +27,12 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  void _openNote([NoteEntity? note]) {
+    Navigator.of(context).pushNamed('/note', arguments: note).then((result) {
+      if (result == true) _cubit.loadNotes();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -34,45 +40,79 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           Expanded(
-            child: CustomScrollView(
-              slivers: [
-                const CupertinoSliverNavigationBar(
-                  largeTitle: Text('iNotes'),
-                  backgroundColor: Color(0xFFF2F2F7),
-                  border: null,
-                ),
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: CupertinoSearchTextField(),
-                  ),
-                ),
-                BlocBuilder<HomeCubit, HomeState>(
-                  bloc: _cubit,
-                  builder: (context, state) => switch (state) {
-                    HomeInitial() || HomeLoading() => const SliverFillRemaining(
-                      child: Center(child: CupertinoActivityIndicator()),
-                    ),
-                    HomeLoaded(:final notes) when notes.isEmpty =>
-                      const SliverFillRemaining(child: _EmptyState()),
-                    HomeLoaded(:final notes) => SliverList.builder(
-                      itemCount: notes.length,
-                      itemBuilder: (context, index) =>
-                          _NoteListTile(note: notes[index]),
-                    ),
-                    HomeError() => const SliverFillRemaining(
-                      child: Center(
-                        child: Text(
-                          'Could not load notes.',
-                          style: TextStyle(
-                            color: CupertinoColors.secondaryLabel,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1128),
+                child: CustomScrollView(
+                  slivers: [
+                    const SliverPadding(padding: EdgeInsets.only(top: 24)),
+                    CupertinoSliverNavigationBar(
+                      largeTitle: const Text('iNotes'),
+                      backgroundColor: const Color(0xFFF2F2F7),
+                      border: null,
+                      trailing: CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: _openNote,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD60A),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'New Note',
+                            style: TextStyle(
+                              color: Color(0xFF1C1C1E),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  },
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(16, 24, 16, 12),
+                        child: CupertinoSearchTextField(),
+                      ),
+                    ),
+                    BlocBuilder<HomeCubit, HomeState>(
+                      bloc: _cubit,
+                      builder: (context, state) => switch (state) {
+                        HomeInitial() ||
+                        HomeLoading() => const SliverFillRemaining(
+                          child: Center(child: CupertinoActivityIndicator()),
+                        ),
+                        HomeLoaded(:final notes) when notes.isEmpty =>
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: _EmptyState(onCreateNote: _openNote),
+                          ),
+                        HomeLoaded(:final notes) => SliverList.builder(
+                          itemCount: notes.length,
+                          itemBuilder: (context, index) => _NoteListTile(
+                            note: notes[index],
+                            onTap: () => _openNote(notes[index]),
+                          ),
+                        ),
+                        HomeError() => const SliverFillRemaining(
+                          child: Center(
+                            child: Text(
+                              'Could not load notes.',
+                              style: TextStyle(
+                                color: CupertinoColors.secondaryLabel,
+                              ),
+                            ),
+                          ),
+                        ),
+                      },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
           _BottomBar(cubit: _cubit),
@@ -83,9 +123,10 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _NoteListTile extends StatelessWidget {
-  const _NoteListTile({required this.note});
+  const _NoteListTile({required this.note, required this.onTap});
 
   final NoteEntity note;
+  final VoidCallback onTap;
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
@@ -110,7 +151,7 @@ class _NoteListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         color: CupertinoColors.systemBackground,
         child: Column(
@@ -176,7 +217,9 @@ class _NoteListTile extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.onCreateNote});
+
+  final VoidCallback onCreateNote;
 
   @override
   Widget build(BuildContext context) {
@@ -186,17 +229,23 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFD60A),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(
-                CupertinoIcons.square_pencil,
-                size: 40,
-                color: CupertinoColors.white,
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: onCreateNote,
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD60A),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    CupertinoIcons.square_pencil,
+                    size: 40,
+                    color: CupertinoColors.white,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -210,7 +259,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Tap the compose button to write your first note.',
+              'Tap the icon to write your first note.',
               style: TextStyle(
                 fontSize: 14,
                 color: CupertinoColors.secondaryLabel,
@@ -238,36 +287,30 @@ class _BottomBar extends StatelessWidget {
           top: BorderSide(color: CupertinoColors.separator, width: 0.5),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: SafeArea(
-        top: false,
-        child: BlocBuilder<HomeCubit, HomeState>(
-          bloc: cubit,
-          builder: (context, state) {
-            final count = state is HomeLoaded ? state.notes.length : 0;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(width: 44),
-                Text(
-                  count == 1 ? '1 Note' : '$count Notes',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: CupertinoColors.secondaryLabel,
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () {},
-                  child: const Icon(
-                    CupertinoIcons.square_pencil,
-                    size: 26,
-                    color: Color(0xFFFFD60A),
-                  ),
-                ),
-              ],
-            );
-          },
+      padding: EdgeInsets.symmetric(vertical: 24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1128),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: SafeArea(
+              top: false,
+              child: BlocBuilder<HomeCubit, HomeState>(
+                bloc: cubit,
+                builder: (context, state) {
+                  final count = state is HomeLoaded ? state.notes.length : 0;
+                  return Text(
+                    count == 1 ? '1 Note' : '$count Notes',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: CupertinoColors.secondaryLabel,
+                    ),
+                    textAlign: TextAlign.center,
+                  );
+                },
+              ),
+            ),
+          ),
         ),
       ),
     );

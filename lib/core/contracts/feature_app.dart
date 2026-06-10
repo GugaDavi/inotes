@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-typedef FeatureRoute<T> = CupertinoPageRoute<T> Function(RouteSettings?);
+typedef FeatureRoute<T> = PageRoute<T> Function(RouteSettings?);
 
 abstract class FeatureApp {
   Future<void> initializeDependencies();
