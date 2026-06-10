@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inotes/core/di/locator.dart';
+import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_cubit.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_state.dart';
@@ -92,7 +93,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
                 onTap: () => Navigator.of(context).pop(false),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(color: const Color(0x4D000000)),
+                  child: const ColoredBox(color: AppColors.scrim),
                 ),
               ),
             ),
@@ -100,9 +101,9 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
               child: GestureDetector(
                 onTap: () {},
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1024),
+                    constraints: const BoxConstraints(maxWidth: AppSpacing.maxModalWidth),
                     child: _NoteDetailCard(
                       cubit: _cubit,
                       isEditing: _isEditing,
@@ -146,14 +147,17 @@ class _NoteDetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(color: CupertinoColors.systemBackground, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: CupertinoColors.systemBackground,
+        borderRadius: BorderRadius.circular(AppSpacing.md),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _Header(cubit: cubit, isEditing: isEditing, onSave: onSave, onCancel: onCancel, onDelete: onDelete),
           Container(height: 0.5, color: CupertinoColors.separator),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.md, 12, AppSpacing.md, AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -170,7 +174,7 @@ class _NoteDetailCard extends StatelessWidget {
                   ),
                   decoration: null,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 CupertinoTextField(
                   controller: contentController,
                   placeholder: 'Start typing…',
@@ -208,7 +212,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -239,7 +243,7 @@ class _Header extends StatelessWidget {
                         ? const CupertinoActivityIndicator()
                         : const Text(
                             'Done',
-                            style: TextStyle(color: Color(0xFFFFD60A), fontWeight: FontWeight.w600),
+                            style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w600),
                           ),
                   ),
                 ],
