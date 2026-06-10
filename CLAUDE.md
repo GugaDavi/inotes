@@ -19,12 +19,14 @@ Flutter Web notes application (COCUS frontend code challenge).
 lib/
   core/
     theme/        # ThemeData, colors, typography
-    errors/       # Failure, AppException
+    errors/       # AppFailure base class only
+    result/       # Result<T> sealed class (Success, Failure)
     utils/        # shared helpers
   features/
     <feature>/
       domain/           # always present
         entities/       # pure Dart domain objects (no external lib dependencies)
+        errors/         # feature-specific failures (extend AppFailure)
         repositories/   # abstract repository interfaces
         usecases/       # one use case per file, dependencies injected via constructor
       data/             # optional
@@ -56,6 +58,8 @@ Cubit → UseCase → Repository → (DataSource?)
 - Use cases receive dependencies via constructor (no service locator in domain).
 - Use cases expose an `execute` method with named parameters — no `call`, no separate `Params` class.
 - Return `Result<T>` (custom sealed class with `Success<T>` and `Failure<T>` in `core/result/result.dart`).
+- Use `Result<void>` for operations that produce no return value (e.g. delete).
+- Feature-specific failures live in `features/<feature>/domain/errors/` — never in `core/errors/`.
 
 ### Data
 - Models extend or map to entities. They own serialization logic.
