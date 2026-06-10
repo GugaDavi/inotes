@@ -1,5 +1,5 @@
 name: inotes
-description: "A new Flutter project."
+description: "iNotes — a minimal notes app with Apple-inspired design."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -34,6 +34,7 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
+  get_it: ^8.0.3
   flutter_bloc: 9.1.1
   equatable: 2.0.8
   flutter_dotenv: 6.0.1
@@ -47,6 +48,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   mocktail: 1.0.5
   fake_cloud_firestore: 4.1.1
+  bloc_test: ^10.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
