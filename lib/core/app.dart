@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:inotes/core/contracts/feature_app.dart';
+import 'package:inotes/core/ui/ui.dart';
 
 class App extends StatelessWidget {
   const App({super.key, required this.routes});
@@ -10,8 +11,9 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoApp(
       title: 'iNotes',
-      theme: const CupertinoThemeData(brightness: Brightness.light, primaryColor: Color(0xFFFFD60A)),
+      theme: const CupertinoThemeData(brightness: Brightness.light, primaryColor: AppColors.accent),
       initialRoute: '/',
+      debugShowCheckedModeBanner: false,
       onGenerateRoute: (settings) => routes[settings.name]?.call(settings),
     );
   }

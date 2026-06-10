@@ -1,8 +1,8 @@
 import 'package:inotes/core/result/result.dart';
 import 'package:inotes/features/notes/domain/repositories/notes_repository.dart';
 
-class DeleteNote {
-  const DeleteNote(this._repository);
+class DeleteNoteUseCase {
+  const DeleteNoteUseCase(this._repository);
 
   final NotesRepository _repository;
 

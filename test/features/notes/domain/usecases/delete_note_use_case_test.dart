@@ -3,20 +3,20 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:inotes/core/result/result.dart';
 import 'package:inotes/features/notes/domain/repositories/notes_repository.dart';
-import 'package:inotes/features/notes/domain/usecases/delete_note.dart';
+import 'package:inotes/features/notes/domain/usecases/delete_note_use_case.dart';
 
 class MockNotesRepository extends Mock implements NotesRepository {}
 
 void main() {
-  late DeleteNote useCase;
+  late DeleteNoteUseCase useCase;
   late MockNotesRepository mockRepository;
 
   setUp(() {
     mockRepository = MockNotesRepository();
-    useCase = DeleteNote(mockRepository);
+    useCase = DeleteNoteUseCase(mockRepository);
   });
 
-  group('DeleteNote', () {
+  group('DeleteNoteUseCase', () {
     const tId = '1';
 
     test('should call repository and return Success when deletion succeeds', () async {

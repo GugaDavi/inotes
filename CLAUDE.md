@@ -55,6 +55,7 @@ Cubit → UseCase → Repository → (DataSource?)
 
 ### Domain
 - Entities are pure Dart classes — no `toJson`/`fromJson`. Name them with the `Entity` suffix (e.g. `NoteEntity`).
+- Use cases must include `UseCase` in the class name (e.g. `CreateNoteUseCase`). The file name mirrors the class: `create_note_use_case.dart`.
 - Use cases receive dependencies via constructor (no service locator in domain).
 - Use cases expose an `execute` method with named parameters — no `call`, no separate `Params` class.
 - Return `Result<T>` (custom sealed class with `Success<T>` and `Failure<T>` in `core/result/result.dart`).
