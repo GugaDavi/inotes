@@ -6,6 +6,7 @@ import 'package:inotes/features/home/presentation/cubit/home_cubit.dart';
 import 'package:inotes/features/home/presentation/cubit/home_state.dart';
 import 'package:inotes/features/home/presentation/widgets/note_list_tile.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
+import 'package:inotes/features/shared/widgets/buttons/primary_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -63,25 +64,7 @@ class _HomePageState extends State<HomePage> {
                                 color: CupertinoColors.label,
                               ),
                             ),
-                            CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: _openNote,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                                decoration: BoxDecoration(
-                                  color: AppColors.accent,
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-                                ),
-                                child: const Text(
-                                  'New Note',
-                                  style: TextStyle(
-                                    color: AppColors.onAccent,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            PrimaryButton(label: 'New Note', onPressed: _openNote),
                           ],
                         ),
                       ),
