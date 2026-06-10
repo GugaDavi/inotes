@@ -7,16 +7,11 @@ import 'package:inotes/features/notes/domain/usecases/get_notes.dart';
 class HomeFeature implements FeatureApp {
   @override
   Future<void> initializeDependencies() async {
-    Locator.registerFactory<HomeCubit>(
-      () => HomeCubit(Locator.get<GetNotes>()),
-    );
+    Locator.registerFactory<HomeCubit>(() => HomeCubit(Locator.get<GetNotes>()));
   }
 
   @override
   Map<String, FeatureRoute> get routes => {
-        '/': (settings) => FeatureApp.buildRoute(
-              settings: settings,
-              builder: (_) => const HomePage(),
-            ),
-      };
+    '/': (settings) => FeatureApp.buildRoute(settings: settings, builder: (_) => const HomePage()),
+  };
 }

@@ -50,10 +50,7 @@ void main() {
 
     test('converts Timestamps to DateTimes in returned data', () async {
       final createdAt = DateTime(2026, 6, 10);
-      await fakeFirestore.collection(collection).add({
-        'title': 'Title',
-        'createdAt': Timestamp.fromDate(createdAt),
-      });
+      await fakeFirestore.collection(collection).add({'title': 'Title', 'createdAt': Timestamp.fromDate(createdAt)});
 
       final result = await service.getAll(collection: collection);
 
@@ -65,20 +62,10 @@ void main() {
       final older = DateTime(2026, 1, 1);
       final newer = DateTime(2026, 6, 10);
 
-      await fakeFirestore.collection(collection).add({
-        'title': 'Old',
-        'createdAt': Timestamp.fromDate(older),
-      });
-      await fakeFirestore.collection(collection).add({
-        'title': 'New',
-        'createdAt': Timestamp.fromDate(newer),
-      });
+      await fakeFirestore.collection(collection).add({'title': 'Old', 'createdAt': Timestamp.fromDate(older)});
+      await fakeFirestore.collection(collection).add({'title': 'New', 'createdAt': Timestamp.fromDate(newer)});
 
-      final result = await service.getAll(
-        collection: collection,
-        orderBy: 'createdAt',
-        descending: true,
-      );
+      final result = await service.getAll(collection: collection, orderBy: 'createdAt', descending: true);
 
       expect(result.first.data['title'], 'New');
       expect(result.last.data['title'], 'Old');
@@ -107,11 +94,7 @@ void main() {
 
     test('throws DocumentNotFoundException for non-existent id', () async {
       expect(
-        () => service.update(
-          collection: collection,
-          id: 'non-existent',
-          data: {'title': 'T'},
-        ),
+        () => service.update(collection: collection, id: 'non-existent', data: {'title': 'T'}),
         throwsA(isA<DocumentNotFoundException>()),
       );
     });

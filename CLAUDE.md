@@ -70,6 +70,11 @@ Cubit → UseCase → Repository → (DataSource?)
 - States use `sealed class` or `freezed` for exhaustive matching.
 - Cubits have no knowledge of widgets — they receive use cases via constructor.
 
+### Formatting
+- Line width is 120 characters (`page_width: 120` in `analysis_options.yaml`).
+- After every file edit, run `dart format <file>` on the changed file.
+- For bulk changes across multiple files, run `dart format lib/ test/`.
+
 ### Tests
 - **Unit tests only** at this stage.
 - Location: `test/features/<feature>/` mirroring the `lib/` structure.

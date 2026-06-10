@@ -17,15 +17,13 @@ void main() {
 
   group('DotenvLoader', () {
     test('get() returns value when key exists', () {
-      when(() => mockDotEnv.maybeGet('API_KEY', fallback: any(named: 'fallback')))
-          .thenReturn('my_value');
+      when(() => mockDotEnv.maybeGet('API_KEY', fallback: any(named: 'fallback'))).thenReturn('my_value');
 
       expect(loader.get('API_KEY'), 'my_value');
     });
 
     test('get() throws ArgumentError when key is not found', () {
-      when(() => mockDotEnv.maybeGet('MISSING', fallback: any(named: 'fallback')))
-          .thenReturn(null);
+      when(() => mockDotEnv.maybeGet('MISSING', fallback: any(named: 'fallback'))).thenReturn(null);
 
       expect(() => loader.get('MISSING'), throwsA(isA<ArgumentError>()));
     });

@@ -8,8 +8,7 @@ class FirestoreServiceImpl implements FirestoreService {
 
   final FirebaseClient _client;
 
-  CollectionReference<Map<String, dynamic>> _collection(String name) =>
-      _client.firestore.collection(name);
+  CollectionReference<Map<String, dynamic>> _collection(String name) => _client.firestore.collection(name);
 
   Map<String, dynamic> _toFirestore(Map<String, dynamic> data) {
     return data.map((key, value) {
@@ -26,10 +25,7 @@ class FirestoreServiceImpl implements FirestoreService {
   }
 
   @override
-  Future<FirestoreDocument> add({
-    required String collection,
-    required Map<String, dynamic> data,
-  }) async {
+  Future<FirestoreDocument> add({required String collection, required Map<String, dynamic> data}) async {
     try {
       final doc = _collection(collection).doc();
       await doc.set(_toFirestore(data));
@@ -40,20 +36,14 @@ class FirestoreServiceImpl implements FirestoreService {
   }
 
   @override
-  Future<List<FirestoreDocument>> getAll({
-    required String collection,
-    String? orderBy,
-    bool descending = false,
-  }) async {
+  Future<List<FirestoreDocument>> getAll({required String collection, String? orderBy, bool descending = false}) async {
     try {
       Query<Map<String, dynamic>> query = _collection(collection);
       if (orderBy != null) {
         query = query.orderBy(orderBy, descending: descending);
       }
       final snapshot = await query.get();
-      return snapshot.docs
-          .map((doc) => (id: doc.id, data: _fromFirestore(doc.data())))
-          .toList();
+      return snapshot.docs.map((doc) => (id: doc.id, data: _fromFirestore(doc.data()))).toList();
     } on FirebaseException catch (e) {
       throw FirestoreOperationException(e.message);
     }
@@ -77,10 +67,7 @@ class FirestoreServiceImpl implements FirestoreService {
   }
 
   @override
-  Future<void> delete({
-    required String collection,
-    required String id,
-  }) async {
+  Future<void> delete({required String collection, required String id}) async {
     try {
       await _collection(collection).doc(id).delete();
     } on FirebaseException catch (e) {

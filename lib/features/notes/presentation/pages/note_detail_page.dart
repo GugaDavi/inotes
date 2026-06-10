@@ -28,9 +28,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     super.initState();
     _cubit = Locator.get<NoteDetailCubit>();
     _titleController = TextEditingController(text: widget.note?.title ?? '');
-    _contentController = TextEditingController(
-      text: widget.note?.content ?? '',
-    );
+    _contentController = TextEditingController(text: widget.note?.content ?? '');
   }
 
   @override
@@ -42,11 +40,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   }
 
   void _save() {
-    _cubit.save(
-      id: widget.note?.id,
-      title: _titleController.text,
-      content: _contentController.text,
-    );
+    _cubit.save(id: widget.note?.id, title: _titleController.text, content: _contentController.text);
   }
 
   @override
@@ -63,12 +57,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
             builder: (_) => CupertinoAlertDialog(
               title: const Text('Error'),
               content: Text(state.message),
-              actions: [
-                CupertinoDialogAction(
-                  child: const Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
+              actions: [CupertinoDialogAction(child: const Text('OK'), onPressed: () => Navigator.of(context).pop())],
             ),
           );
         }
@@ -133,19 +122,11 @@ class _NoteDetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: BoxDecoration(color: CupertinoColors.systemBackground, borderRadius: BorderRadius.circular(16)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _Header(
-            cubit: cubit,
-            isEditing: isEditing,
-            onSave: onSave,
-            onCancel: onCancel,
-          ),
+          _Header(cubit: cubit, isEditing: isEditing, onSave: onSave, onCancel: onCancel),
           Container(height: 0.5, color: CupertinoColors.separator),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -157,11 +138,7 @@ class _NoteDetailCard extends StatelessWidget {
                   placeholder: 'Title',
                   autofocus: true,
                   textCapitalization: TextCapitalization.sentences,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: CupertinoColors.label,
-                  ),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: CupertinoColors.label),
                   placeholderStyle: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -176,14 +153,8 @@ class _NoteDetailCard extends StatelessWidget {
                   textCapitalization: TextCapitalization.sentences,
                   maxLines: 6,
                   minLines: 3,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: CupertinoColors.label,
-                  ),
-                  placeholderStyle: const TextStyle(
-                    fontSize: 15,
-                    color: CupertinoColors.placeholderText,
-                  ),
+                  style: const TextStyle(fontSize: 15, color: CupertinoColors.label),
+                  placeholderStyle: const TextStyle(fontSize: 15, color: CupertinoColors.placeholderText),
                   decoration: null,
                 ),
               ],
@@ -196,12 +167,7 @@ class _NoteDetailCard extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({
-    required this.cubit,
-    required this.isEditing,
-    required this.onSave,
-    required this.onCancel,
-  });
+  const _Header({required this.cubit, required this.isEditing, required this.onSave, required this.onCancel});
 
   final NoteDetailCubit cubit;
   final bool isEditing;
@@ -217,18 +183,11 @@ class _Header extends StatelessWidget {
         children: [
           CupertinoButton(
             onPressed: onCancel,
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: CupertinoColors.secondaryLabel),
-            ),
+            child: const Text('Cancel', style: TextStyle(color: CupertinoColors.secondaryLabel)),
           ),
           Text(
             isEditing ? 'Edit Note' : 'New Note',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: CupertinoColors.label,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: CupertinoColors.label),
           ),
           BlocBuilder<NoteDetailCubit, NoteDetailState>(
             bloc: cubit,
@@ -240,10 +199,7 @@ class _Header extends StatelessWidget {
                     ? const CupertinoActivityIndicator()
                     : const Text(
                         'Done',
-                        style: TextStyle(
-                          color: Color(0xFFFFD60A),
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: TextStyle(color: Color(0xFFFFD60A), fontWeight: FontWeight.w600),
                       ),
               );
             },

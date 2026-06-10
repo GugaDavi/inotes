@@ -13,12 +13,7 @@ class MockGetNotes extends Mock implements GetNotes {}
 void main() {
   late MockGetNotes mockGetNotes;
 
-  final tNote = NoteEntity(
-    id: '1',
-    title: 'Test Note',
-    content: 'Some content',
-    createdAt: DateTime(2026, 6, 10),
-  );
+  final tNote = NoteEntity(id: '1', title: 'Test Note', content: 'Some content', createdAt: DateTime(2026, 6, 10));
 
   setUp(() {
     mockGetNotes = MockGetNotes();
@@ -35,19 +30,20 @@ void main() {
       'emits [HomeLoading, HomeLoaded] when notes are returned',
       build: () => HomeCubit(mockGetNotes),
       setUp: () {
-        when(() => mockGetNotes.execute())
-            .thenAnswer((_) async => Success([tNote]));
+        when(() => mockGetNotes.execute()).thenAnswer((_) async => Success([tNote]));
       },
       act: (cubit) => cubit.loadNotes(),
-      expect: () => [const HomeLoading(), HomeLoaded([tNote])],
+      expect: () => [
+        const HomeLoading(),
+        HomeLoaded([tNote]),
+      ],
     );
 
     blocTest<HomeCubit, HomeState>(
       'emits [HomeLoading, HomeLoaded with empty list] when no notes exist',
       build: () => HomeCubit(mockGetNotes),
       setUp: () {
-        when(() => mockGetNotes.execute())
-            .thenAnswer((_) async => const Success([]));
+        when(() => mockGetNotes.execute()).thenAnswer((_) async => const Success([]));
       },
       act: (cubit) => cubit.loadNotes(),
       expect: () => [const HomeLoading(), const HomeLoaded([])],
@@ -57,8 +53,7 @@ void main() {
       'emits [HomeLoading, HomeError] when repository fails',
       build: () => HomeCubit(mockGetNotes),
       setUp: () {
-        when(() => mockGetNotes.execute())
-            .thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
+        when(() => mockGetNotes.execute()).thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
       },
       act: (cubit) => cubit.loadNotes(),
       expect: () => [const HomeLoading(), const HomeError()],

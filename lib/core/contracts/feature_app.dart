@@ -11,11 +11,10 @@ abstract class FeatureApp {
     required RouteSettings? settings,
     bool maintainState = true,
     bool fullscreenDialog = false,
-  }) =>
-      CupertinoPageRoute<T>(
-        builder: builder,
-        settings: settings,
-        maintainState: maintainState,
-        fullscreenDialog: fullscreenDialog,
-      );
+  }) => CupertinoPageRoute<T>(
+    builder: builder,
+    settings: settings,
+    maintainState: maintainState,
+    fullscreenDialog: fullscreenDialog,
+  );
 }

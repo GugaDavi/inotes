@@ -1,12 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class NoteEntity extends Equatable {
-  const NoteEntity({
-    required this.id,
-    required this.title,
-    required this.content,
-    required this.createdAt,
-  });
+  const NoteEntity({required this.id, required this.title, required this.content, required this.createdAt});
 
   final String id;
   final String title;

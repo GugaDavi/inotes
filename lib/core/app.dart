@@ -10,10 +10,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoApp(
       title: 'iNotes',
-      theme: const CupertinoThemeData(
-        brightness: Brightness.light,
-        primaryColor: Color(0xFFFFD60A),
-      ),
+      theme: const CupertinoThemeData(brightness: Brightness.light, primaryColor: Color(0xFFFFD60A)),
       initialRoute: '/',
       onGenerateRoute: (settings) => routes[settings.name]?.call(settings),
     );

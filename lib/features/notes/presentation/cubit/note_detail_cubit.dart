@@ -6,17 +6,12 @@ import 'package:inotes/features/notes/domain/usecases/update_note.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_state.dart';
 
 class NoteDetailCubit extends Cubit<NoteDetailState> {
-  NoteDetailCubit(this._createNote, this._updateNote)
-      : super(const NoteDetailInitial());
+  NoteDetailCubit(this._createNote, this._updateNote) : super(const NoteDetailInitial());
 
   final CreateNote _createNote;
   final UpdateNote _updateNote;
 
-  Future<void> save({
-    String? id,
-    required String title,
-    required String content,
-  }) async {
+  Future<void> save({String? id, required String title, required String content}) async {
     emit(const NoteDetailSaving());
 
     final result = id == null
@@ -27,11 +22,7 @@ class NoteDetailCubit extends Cubit<NoteDetailState> {
       case Success(:final value):
         emit(NoteDetailSaved(value));
       case Failure(:final failure):
-        emit(NoteDetailError(
-          failure is EmptyTitleFailure
-              ? 'Title cannot be empty.'
-              : 'Failed to save note.',
-        ));
+        emit(NoteDetailError(failure is EmptyTitleFailure ? 'Title cannot be empty.' : 'Failed to save note.'));
     }
   }
 }
