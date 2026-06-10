@@ -11,7 +11,8 @@ Flutter Web notes application (COCUS frontend code challenge).
 | Primary storage | Firebase Firestore |
 | Offline storage | Hive (offline-first features) |
 | Navigation | go_router |
-| Tests | Unit tests (`flutter_test`) |
+| Unit tests | `flutter_test` |
+| Integration tests | `flutter_test` (full app widget tests) |
 
 ## Folder Structure
 
@@ -77,10 +78,20 @@ Cubit → UseCase → Repository → (DataSource?)
 - For bulk changes across multiple files, run `dart format lib/ test/`.
 
 ### Tests
-- **Unit tests only** at this stage.
+
+#### Unit tests
 - Location: `test/features/<feature>/` mirroring the `lib/` structure.
 - Use cases and Cubits must cover 100% of business logic branches.
 - DataSources tested with Firestore mocks (`fake_cloud_firestore`).
+
+#### Integration tests
+- Location: `test/integration/<feature>/` mirroring the `lib/` structure. Helper in `test/integration/helpers/`.
+- Each test pumps the full `App` widget with fake dependencies — no real Firebase, no browser required.
+- `fake_app_bootstrap.dart` resets `GetIt.instance`, registers `FirestoreService` backed by `FakeFirebaseFirestore`, initialises all features, and returns `AppTestSetup` (`routes` + `fakeFirestore`). Use `fakeFirestore` to seed data for scenarios that require pre-existing notes.
+- Use `setUpAll` for read-only groups (avoids redundant bootstraps). Use `setUp` for groups that write or mutate state.
+- When the note detail modal is open (`opaque: false`), the home page stays in the widget tree. Use `find.byWidgetPredicate` with the field's `placeholder` to target `CupertinoTextField` widgets unambiguously — `CupertinoSearchTextField` wraps a `CupertinoTextField` internally and would otherwise be picked up by `.first`/`.last`.
+- Run: `flutter test test/integration/`
+- **TODO:** Replace `fake_app_bootstrap.dart` with a real bootstrap that connects to a dedicated Firebase test environment. Tests should seed and clean up data via the real Firestore, making integration tests a true end-to-end safety net.
 
 ## Planned Features
 
