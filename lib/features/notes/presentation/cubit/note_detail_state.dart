@@ -28,6 +28,20 @@ final class NoteDetailSaved extends NoteDetailState {
   List<Object?> get props => [note];
 }
 
+final class NoteDetailDeleting extends NoteDetailState {
+  const NoteDetailDeleting();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class NoteDetailDeleted extends NoteDetailState {
+  const NoteDetailDeleted();
+
+  @override
+  List<Object?> get props => [];
+}
+
 final class NoteDetailError extends NoteDetailState {
   const NoteDetailError(this.message);
 

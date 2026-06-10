@@ -2,9 +2,10 @@ import 'package:inotes/core/contracts/feature_app.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/features/notes/data/repositories/notes_repository_impl.dart';
 import 'package:inotes/features/notes/domain/repositories/notes_repository.dart';
-import 'package:inotes/features/notes/domain/usecases/create_note.dart';
-import 'package:inotes/features/notes/domain/usecases/get_notes.dart';
-import 'package:inotes/features/notes/domain/usecases/update_note.dart';
+import 'package:inotes/features/notes/domain/usecases/create_note_use_case.dart';
+import 'package:inotes/features/notes/domain/usecases/delete_note_use_case.dart';
+import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
+import 'package:inotes/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_cubit.dart';
 import 'package:inotes/features/notes/presentation/routes/note_detail_route.dart';
 import 'package:inotes/services/firestore/firestore_service.dart';
@@ -22,14 +23,19 @@ class NotesFeature implements FeatureApp {
   }
 
   Future<void> _domainLayer() async {
-    Locator.registerFactory<GetNotes>(() => GetNotes(Locator.get<NotesRepository>()));
-    Locator.registerFactory<CreateNote>(() => CreateNote(Locator.get<NotesRepository>()));
-    Locator.registerFactory<UpdateNote>(() => UpdateNote(Locator.get<NotesRepository>()));
+    Locator.registerFactory<GetNotesUseCase>(() => GetNotesUseCase(Locator.get<NotesRepository>()));
+    Locator.registerFactory<CreateNoteUseCase>(() => CreateNoteUseCase(Locator.get<NotesRepository>()));
+    Locator.registerFactory<UpdateNoteUseCase>(() => UpdateNoteUseCase(Locator.get<NotesRepository>()));
+    Locator.registerFactory<DeleteNoteUseCase>(() => DeleteNoteUseCase(Locator.get<NotesRepository>()));
   }
 
   Future<void> _presentationLayer() async {
     Locator.registerFactory<NoteDetailCubit>(
-      () => NoteDetailCubit(Locator.get<CreateNote>(), Locator.get<UpdateNote>()),
+      () => NoteDetailCubit(
+        Locator.get<CreateNoteUseCase>(),
+        Locator.get<UpdateNoteUseCase>(),
+        Locator.get<DeleteNoteUseCase>(),
+      ),
     );
   }
 
