@@ -32,7 +32,13 @@ void main() {
 
       expect(result, isA<Failure<NoteEntity>>());
       expect((result as Failure<NoteEntity>).failure, isA<EmptyTitleFailure>());
-      verifyNever(() => mockRepository.update(id: any(named: 'id'), title: any(named: 'title'), content: any(named: 'content')));
+      verifyNever(
+        () => mockRepository.update(
+          id: any(named: 'id'),
+          title: any(named: 'title'),
+          content: any(named: 'content'),
+        ),
+      );
     });
 
     test('should return Failure(EmptyTitleFailure) when title is whitespace only', () async {
@@ -40,12 +46,22 @@ void main() {
 
       expect(result, isA<Failure<NoteEntity>>());
       expect((result as Failure<NoteEntity>).failure, isA<EmptyTitleFailure>());
-      verifyNever(() => mockRepository.update(id: any(named: 'id'), title: any(named: 'title'), content: any(named: 'content')));
+      verifyNever(
+        () => mockRepository.update(
+          id: any(named: 'id'),
+          title: any(named: 'title'),
+          content: any(named: 'content'),
+        ),
+      );
     });
 
     test('should call repository and return Success(NoteEntity) when title is valid', () async {
       when(
-        () => mockRepository.update(id: any(named: 'id'), title: any(named: 'title'), content: any(named: 'content')),
+        () => mockRepository.update(
+          id: any(named: 'id'),
+          title: any(named: 'title'),
+          content: any(named: 'content'),
+        ),
       ).thenAnswer((_) async => Success(tNote));
 
       final result = await useCase.execute(id: tId, title: 'Updated Title', content: 'Updated content');

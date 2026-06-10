@@ -8,10 +8,7 @@ class CreateNote {
 
   final NotesRepository _repository;
 
-  Future<Result<NoteEntity>> execute({
-    required String title,
-    required String content,
-  }) async {
+  Future<Result<NoteEntity>> execute({required String title, required String content}) async {
     if (title.trim().isEmpty) {
       return Failure(const EmptyTitleFailure());
     }

@@ -18,34 +18,21 @@ class NotesFeature implements FeatureApp {
   }
 
   Future<void> _dataLayer() async {
-    Locator.registerFactory<NotesRepository>(
-      () => NotesRepositoryImpl(Locator.get<FirestoreService>()),
-    );
+    Locator.registerFactory<NotesRepository>(() => NotesRepositoryImpl(Locator.get<FirestoreService>()));
   }
 
   Future<void> _domainLayer() async {
-    Locator.registerFactory<GetNotes>(
-      () => GetNotes(Locator.get<NotesRepository>()),
-    );
-    Locator.registerFactory<CreateNote>(
-      () => CreateNote(Locator.get<NotesRepository>()),
-    );
-    Locator.registerFactory<UpdateNote>(
-      () => UpdateNote(Locator.get<NotesRepository>()),
-    );
+    Locator.registerFactory<GetNotes>(() => GetNotes(Locator.get<NotesRepository>()));
+    Locator.registerFactory<CreateNote>(() => CreateNote(Locator.get<NotesRepository>()));
+    Locator.registerFactory<UpdateNote>(() => UpdateNote(Locator.get<NotesRepository>()));
   }
 
   Future<void> _presentationLayer() async {
     Locator.registerFactory<NoteDetailCubit>(
-      () => NoteDetailCubit(
-        Locator.get<CreateNote>(),
-        Locator.get<UpdateNote>(),
-      ),
+      () => NoteDetailCubit(Locator.get<CreateNote>(), Locator.get<UpdateNote>()),
     );
   }
 
   @override
-  Map<String, FeatureRoute> get routes => {
-        '/note': (settings) => NoteDetailRoute(settings),
-      };
+  Map<String, FeatureRoute> get routes => {'/note': (settings) => NoteDetailRoute(settings)};
 }

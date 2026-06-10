@@ -20,23 +20,18 @@ void main() {
   });
 
   final tCreatedAt = DateTime(2026, 6, 10);
-  final tData = {
-    'title': 'Title',
-    'content': 'Content',
-    'createdAt': tCreatedAt,
-  };
+  final tData = {'title': 'Title', 'content': 'Content', 'createdAt': tCreatedAt};
   final tDocument = (id: '1', data: tData);
-  final tNote = NoteModel(
-    id: '1',
-    title: 'Title',
-    content: 'Content',
-    createdAt: tCreatedAt,
-  );
+  final tNote = NoteModel(id: '1', title: 'Title', content: 'Content', createdAt: tCreatedAt);
 
   group('create', () {
     test('returns Success(NoteEntity) on service success', () async {
-      when(() => mockService.add(collection: any(named: 'collection'), data: any(named: 'data')))
-          .thenAnswer((_) async => tDocument);
+      when(
+        () => mockService.add(
+          collection: any(named: 'collection'),
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer((_) async => tDocument);
 
       final result = await repository.create(title: 'Title', content: 'Content');
 
@@ -45,8 +40,12 @@ void main() {
     });
 
     test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
-      when(() => mockService.add(collection: any(named: 'collection'), data: any(named: 'data')))
-          .thenThrow(const FirestoreOperationException());
+      when(
+        () => mockService.add(
+          collection: any(named: 'collection'),
+          data: any(named: 'data'),
+        ),
+      ).thenThrow(const FirestoreOperationException());
 
       final result = await repository.create(title: 'Title', content: 'Content');
 
@@ -57,11 +56,13 @@ void main() {
 
   group('getAll', () {
     test('returns Success(List<NoteEntity>) on service success', () async {
-      when(() => mockService.getAll(
-            collection: any(named: 'collection'),
-            orderBy: any(named: 'orderBy'),
-            descending: any(named: 'descending'),
-          )).thenAnswer((_) async => [tDocument]);
+      when(
+        () => mockService.getAll(
+          collection: any(named: 'collection'),
+          orderBy: any(named: 'orderBy'),
+          descending: any(named: 'descending'),
+        ),
+      ).thenAnswer((_) async => [tDocument]);
 
       final result = await repository.getAll();
 
@@ -70,11 +71,13 @@ void main() {
     });
 
     test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
-      when(() => mockService.getAll(
-            collection: any(named: 'collection'),
-            orderBy: any(named: 'orderBy'),
-            descending: any(named: 'descending'),
-          )).thenThrow(const FirestoreOperationException());
+      when(
+        () => mockService.getAll(
+          collection: any(named: 'collection'),
+          orderBy: any(named: 'orderBy'),
+          descending: any(named: 'descending'),
+        ),
+      ).thenThrow(const FirestoreOperationException());
 
       final result = await repository.getAll();
 
@@ -85,11 +88,13 @@ void main() {
 
   group('update', () {
     test('returns Success(NoteEntity) on service success', () async {
-      when(() => mockService.update(
-            collection: any(named: 'collection'),
-            id: any(named: 'id'),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => tDocument);
+      when(
+        () => mockService.update(
+          collection: any(named: 'collection'),
+          id: any(named: 'id'),
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer((_) async => tDocument);
 
       final result = await repository.update(id: '1', title: 'Title', content: 'Content');
 
@@ -98,11 +103,13 @@ void main() {
     });
 
     test('returns Failure(NoteNotFoundFailure) on DocumentNotFoundException', () async {
-      when(() => mockService.update(
-            collection: any(named: 'collection'),
-            id: any(named: 'id'),
-            data: any(named: 'data'),
-          )).thenThrow(const DocumentNotFoundException());
+      when(
+        () => mockService.update(
+          collection: any(named: 'collection'),
+          id: any(named: 'id'),
+          data: any(named: 'data'),
+        ),
+      ).thenThrow(const DocumentNotFoundException());
 
       final result = await repository.update(id: '1', title: 'Title', content: 'Content');
 
@@ -111,11 +118,13 @@ void main() {
     });
 
     test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
-      when(() => mockService.update(
-            collection: any(named: 'collection'),
-            id: any(named: 'id'),
-            data: any(named: 'data'),
-          )).thenThrow(const FirestoreOperationException());
+      when(
+        () => mockService.update(
+          collection: any(named: 'collection'),
+          id: any(named: 'id'),
+          data: any(named: 'data'),
+        ),
+      ).thenThrow(const FirestoreOperationException());
 
       final result = await repository.update(id: '1', title: 'Title', content: 'Content');
 
@@ -126,8 +135,12 @@ void main() {
 
   group('delete', () {
     test('returns Success(void) on service success', () async {
-      when(() => mockService.delete(collection: any(named: 'collection'), id: any(named: 'id')))
-          .thenAnswer((_) async {});
+      when(
+        () => mockService.delete(
+          collection: any(named: 'collection'),
+          id: any(named: 'id'),
+        ),
+      ).thenAnswer((_) async {});
 
       final result = await repository.delete(id: '1');
 
@@ -135,8 +148,12 @@ void main() {
     });
 
     test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
-      when(() => mockService.delete(collection: any(named: 'collection'), id: any(named: 'id')))
-          .thenThrow(const FirestoreOperationException());
+      when(
+        () => mockService.delete(
+          collection: any(named: 'collection'),
+          id: any(named: 'id'),
+        ),
+      ).thenThrow(const FirestoreOperationException());
 
       final result = await repository.delete(id: '1');
 

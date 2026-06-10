@@ -7,22 +7,13 @@ void main() {
 
   group('NoteModel', () {
     test('is a NoteEntity', () {
-      final model = NoteModel(
-        id: '1',
-        title: 'Title',
-        content: 'Content',
-        createdAt: tCreatedAt,
-      );
+      final model = NoteModel(id: '1', title: 'Title', content: 'Content', createdAt: tCreatedAt);
 
       expect(model, isA<NoteEntity>());
     });
 
     test('fromMap creates model from plain dart map', () {
-      final model = NoteModel.fromMap('1', {
-        'title': 'Title',
-        'content': 'Content',
-        'createdAt': tCreatedAt,
-      });
+      final model = NoteModel.fromMap('1', {'title': 'Title', 'content': 'Content', 'createdAt': tCreatedAt});
 
       expect(model.id, '1');
       expect(model.title, 'Title');
@@ -31,12 +22,7 @@ void main() {
     });
 
     test('toMap returns map without id', () {
-      final model = NoteModel(
-        id: '1',
-        title: 'Title',
-        content: 'Content',
-        createdAt: tCreatedAt,
-      );
+      final model = NoteModel(id: '1', title: 'Title', content: 'Content', createdAt: tCreatedAt);
 
       final map = model.toMap();
 

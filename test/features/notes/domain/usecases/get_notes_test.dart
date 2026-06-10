@@ -19,18 +19,8 @@ void main() {
 
   group('GetNotes', () {
     final tNotes = [
-      NoteEntity(
-        id: '1',
-        title: 'First Note',
-        content: 'First content',
-        createdAt: DateTime(2026, 6, 9),
-      ),
-      NoteEntity(
-        id: '2',
-        title: 'Second Note',
-        content: 'Second content',
-        createdAt: DateTime(2026, 6, 10),
-      ),
+      NoteEntity(id: '1', title: 'First Note', content: 'First content', createdAt: DateTime(2026, 6, 9)),
+      NoteEntity(id: '2', title: 'Second Note', content: 'Second content', createdAt: DateTime(2026, 6, 10)),
     ];
 
     test('should return Success with list of notes', () async {

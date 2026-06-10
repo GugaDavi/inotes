@@ -17,12 +17,7 @@ void main() {
   late MockCreateNote mockCreateNote;
   late MockUpdateNote mockUpdateNote;
 
-  final tNote = NoteEntity(
-    id: '1',
-    title: 'Test Note',
-    content: 'Some content',
-    createdAt: DateTime(2026, 6, 10),
-  );
+  final tNote = NoteEntity(id: '1', title: 'Test Note', content: 'Some content', createdAt: DateTime(2026, 6, 10));
 
   setUp(() {
     mockCreateNote = MockCreateNote();
@@ -64,10 +59,7 @@ void main() {
           ).thenAnswer((_) async => const Failure(EmptyTitleFailure()));
         },
         act: (cubit) => cubit.save(title: '', content: ''),
-        expect: () => [
-          isA<NoteDetailSaving>(),
-          const NoteDetailError('Title cannot be empty.'),
-        ],
+        expect: () => [isA<NoteDetailSaving>(), const NoteDetailError('Title cannot be empty.')],
       );
 
       blocTest<NoteDetailCubit, NoteDetailState>(
@@ -82,10 +74,7 @@ void main() {
           ).thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
         },
         act: (cubit) => cubit.save(title: 'Note', content: ''),
-        expect: () => [
-          isA<NoteDetailSaving>(),
-          const NoteDetailError('Failed to save note.'),
-        ],
+        expect: () => [isA<NoteDetailSaving>(), const NoteDetailError('Failed to save note.')],
       );
     });
 
@@ -102,8 +91,7 @@ void main() {
             ),
           ).thenAnswer((_) async => Success(tNote));
         },
-        act: (cubit) =>
-            cubit.save(id: '1', title: 'Test Note', content: 'Some content'),
+        act: (cubit) => cubit.save(id: '1', title: 'Test Note', content: 'Some content'),
         expect: () => [isA<NoteDetailSaving>(), NoteDetailSaved(tNote)],
       );
 
@@ -120,10 +108,7 @@ void main() {
           ).thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
         },
         act: (cubit) => cubit.save(id: '1', title: 'Note', content: ''),
-        expect: () => [
-          isA<NoteDetailSaving>(),
-          const NoteDetailError('Failed to save note.'),
-        ],
+        expect: () => [isA<NoteDetailSaving>(), const NoteDetailError('Failed to save note.')],
       );
     });
   });

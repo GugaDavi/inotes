@@ -29,11 +29,7 @@ class NotesRepositoryImpl implements NotesRepository {
   @override
   Future<Result<List<NoteEntity>>> getAll() async {
     try {
-      final docs = await _service.getAll(
-        collection: _collection,
-        orderBy: 'createdAt',
-        descending: true,
-      );
+      final docs = await _service.getAll(collection: _collection, orderBy: 'createdAt', descending: true);
       return Success(docs.map((doc) => NoteModel.fromMap(doc.id, doc.data)).toList());
     } on FirestoreOperationException catch (e) {
       return Failure(NoteFirestoreFailure(e.message));
@@ -41,17 +37,9 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
-  Future<Result<NoteEntity>> update({
-    required String id,
-    required String title,
-    required String content,
-  }) async {
+  Future<Result<NoteEntity>> update({required String id, required String title, required String content}) async {
     try {
-      final doc = await _service.update(
-        collection: _collection,
-        id: id,
-        data: {'title': title, 'content': content},
-      );
+      final doc = await _service.update(collection: _collection, id: id, data: {'title': title, 'content': content});
       return Success(NoteModel.fromMap(doc.id, doc.data));
     } on DocumentNotFoundException {
       return Failure(const NoteNotFoundFailure());

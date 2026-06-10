@@ -15,17 +15,12 @@ Future<Map<String, FeatureRoute>> bootstrap() async {
   final firebase = FirebaseClientImpl(env);
   await firebase.initialize();
 
-  Locator.registerFactory<FirestoreService>(
-    () => FirestoreServiceImpl(firebase),
-  );
+  Locator.registerFactory<FirestoreService>(() => FirestoreServiceImpl(firebase));
 
   final features = <FeatureApp>[NotesFeature(), HomeFeature()];
   for (final feature in features) {
     await feature.initializeDependencies();
   }
 
-  return features.fold<Map<String, FeatureRoute>>(
-    {},
-    (acc, feature) => acc..addAll(feature.routes),
-  );
+  return features.fold<Map<String, FeatureRoute>>({}, (acc, feature) => acc..addAll(feature.routes));
 }
