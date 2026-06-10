@@ -6,3 +6,19 @@ class EmptyTitleFailure extends AppFailure {
   @override
   List<Object?> get props => [];
 }
+
+class NoteNotFoundFailure extends AppFailure {
+  const NoteNotFoundFailure();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class NoteFirestoreFailure extends AppFailure {
+  const NoteFirestoreFailure([this.message]);
+
+  final String? message;
+
+  @override
+  List<Object?> get props => [message];
+}
