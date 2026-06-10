@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
+import 'package:inotes/features/shared/formatters/date_formatter.dart';
 
 class NoteListTile extends StatefulWidget {
   const NoteListTile({super.key, required this.note, required this.onTap});
@@ -15,25 +16,7 @@ class NoteListTile extends StatefulWidget {
 class _NoteListTileState extends State<NoteListTile> {
   bool _hovered = false;
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final noteDay = DateTime(date.year, date.month, date.day);
-    final diff = today.difference(noteDay).inDays;
-
-    if (diff == 0) {
-      final h = date.hour.toString().padLeft(2, '0');
-      final m = date.minute.toString().padLeft(2, '0');
-      return '$h:$m';
-    } else if (diff == 1) {
-      return 'Yesterday';
-    } else if (diff < 7) {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      return days[date.weekday - 1];
-    } else {
-      return '${date.month}/${date.day}/${date.year}';
-    }
-  }
+  static const _formatter = DateFormatter();
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +56,7 @@ class _NoteListTileState extends State<NoteListTile> {
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
-                        _formatDate(widget.note.createdAt),
+                        _formatter.formatNoteDate(widget.note.createdAt),
                         style: const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel),
                       ),
                       const SizedBox(width: AppSpacing.xs),
