@@ -30,7 +30,11 @@ flutter run -d chrome
 ### Run tests
 
 ```bash
+# Unit tests
 flutter test
+
+# Integration tests
+flutter test test/integration/
 ```
 
 ## Architecture
@@ -39,12 +43,22 @@ Feature-based clean architecture. See [CLAUDE.md](CLAUDE.md) for the full archit
 
 ```
 lib/
-  core/         # theme, errors, shared utils
+  core/
+    ui/           # AppColors, AppSpacing design tokens
+    errors/       # AppFailure base class
+    result/       # Result<T> sealed class (Success, Failure)
+    di/           # Service locator
+    env/          # Environment / .env loading
   features/
     <feature>/
       domain/       # entities, repository interfaces, use cases
       data/         # models, datasources, repository implementations
       presentation/ # pages, widgets, cubits
+    shared/
+      formatters/   # DateFormatter and other shared formatters
+      widgets/      # Reusable UI components (PrimaryButton, …)
+  services/
+    firestore/    # Firestore service abstraction
 ```
 
 **State management:** Cubit (`flutter_bloc`)  
@@ -57,11 +71,11 @@ lib/
 
 ### Core (required)
 
-- [ ] Create note with title and content
-- [ ] List all notes
-- [ ] View note detail
-- [ ] Edit note
-- [ ] Delete note
+- [x] Create note with title and content
+- [x] List all notes
+- [x] View note detail
+- [x] Edit note
+- [x] Delete note
 
 ### Bonus
 
@@ -70,17 +84,3 @@ lib/
 - [ ] Filter notes in list view
 - [ ] Sort notes in list view
 - [ ] Note tagging / grouping
-
----
-
-## Project Structure
-
-```
-lib/
-  core/
-  features/
-    notes/
-test/
-  features/
-    notes/
-```
