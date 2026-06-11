@@ -20,34 +20,40 @@ void main() {
   });
 
   final tCreatedAt = DateTime(2026, 6, 10);
-  final tData = {'title': 'Title', 'content': 'Content', 'createdAt': tCreatedAt};
+  final tData = {'userId': 'user-a', 'title': 'Title', 'content': 'Content', 'createdAt': tCreatedAt};
   final tDocument = (id: '1', data: tData);
-  final tNote = NoteModel(id: '1', title: 'Title', content: 'Content', createdAt: tCreatedAt);
+  final tNote = NoteModel(id: '1', userId: 'user-a', title: 'Title', content: 'Content', createdAt: tCreatedAt);
 
   group('create', () {
     test('returns Success(NoteEntity) on service success', () async {
       when(
-        () => mockService.add(
-          collection: any(named: 'collection'),
-          data: any(named: 'data'),
-        ),
+        () => mockService.add(collection: any(named: 'collection'), data: any(named: 'data')),
       ).thenAnswer((_) async => tDocument);
 
-      final result = await repository.create(title: 'Title', content: 'Content');
+      final result = await repository.create(userId: 'user-a', title: 'Title', content: 'Content');
 
       expect(result, isA<Success<NoteEntity>>());
       expect((result as Success<NoteEntity>).value, tNote);
     });
 
+    test('includes userId in stored data', () async {
+      Map<String, dynamic>? capturedData;
+      when(() => mockService.add(collection: any(named: 'collection'), data: any(named: 'data'))).thenAnswer((inv) async {
+        capturedData = inv.namedArguments[const Symbol('data')] as Map<String, dynamic>;
+        return tDocument;
+      });
+
+      await repository.create(userId: 'user-a', title: 'Title', content: 'Content');
+
+      expect(capturedData!['userId'], 'user-a');
+    });
+
     test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
       when(
-        () => mockService.add(
-          collection: any(named: 'collection'),
-          data: any(named: 'data'),
-        ),
+        () => mockService.add(collection: any(named: 'collection'), data: any(named: 'data')),
       ).thenThrow(const FirestoreOperationException());
 
-      final result = await repository.create(title: 'Title', content: 'Content');
+      final result = await repository.create(userId: 'user-a', title: 'Title', content: 'Content');
 
       expect(result, isA<Failure<NoteEntity>>());
       expect((result as Failure<NoteEntity>).failure, isA<NoteFirestoreFailure>());
@@ -61,13 +67,33 @@ void main() {
           collection: any(named: 'collection'),
           orderBy: any(named: 'orderBy'),
           descending: any(named: 'descending'),
+          where: any(named: 'where'),
         ),
       ).thenAnswer((_) async => [tDocument]);
 
-      final result = await repository.getAll();
+      final result = await repository.getAll(userId: 'user-a');
 
       expect(result, isA<Success<List<NoteEntity>>>());
       expect((result as Success<List<NoteEntity>>).value, [tNote]);
+    });
+
+    test('filters by userId via where param', () async {
+      Map<String, Object?>? capturedWhere;
+      when(
+        () => mockService.getAll(
+          collection: any(named: 'collection'),
+          orderBy: any(named: 'orderBy'),
+          descending: any(named: 'descending'),
+          where: any(named: 'where'),
+        ),
+      ).thenAnswer((inv) async {
+        capturedWhere = inv.namedArguments[const Symbol('where')] as Map<String, Object?>?;
+        return [tDocument];
+      });
+
+      await repository.getAll(userId: 'user-a');
+
+      expect(capturedWhere, {'userId': 'user-a'});
     });
 
     test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
@@ -76,10 +102,11 @@ void main() {
           collection: any(named: 'collection'),
           orderBy: any(named: 'orderBy'),
           descending: any(named: 'descending'),
+          where: any(named: 'where'),
         ),
       ).thenThrow(const FirestoreOperationException());
 
-      final result = await repository.getAll();
+      final result = await repository.getAll(userId: 'user-a');
 
       expect(result, isA<Failure<List<NoteEntity>>>());
       expect((result as Failure<List<NoteEntity>>).failure, isA<NoteFirestoreFailure>());
@@ -136,10 +163,7 @@ void main() {
   group('delete', () {
     test('returns Success(void) on service success', () async {
       when(
-        () => mockService.delete(
-          collection: any(named: 'collection'),
-          id: any(named: 'id'),
-        ),
+        () => mockService.delete(collection: any(named: 'collection'), id: any(named: 'id')),
       ).thenAnswer((_) async {});
 
       final result = await repository.delete(id: '1');
@@ -149,10 +173,7 @@ void main() {
 
     test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
       when(
-        () => mockService.delete(
-          collection: any(named: 'collection'),
-          id: any(named: 'id'),
-        ),
+        () => mockService.delete(collection: any(named: 'collection'), id: any(named: 'id')),
       ).thenThrow(const FirestoreOperationException());
 
       final result = await repository.delete(id: '1');

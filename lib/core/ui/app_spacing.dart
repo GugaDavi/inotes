@@ -11,4 +11,5 @@ abstract final class AppSpacing {
   static const double radiusPill = 20.0;
   static const double maxContentWidth = 1128.0;
   static const double maxModalWidth = 1024.0;
+  static const double maxFormWidth = 480.0;
 }

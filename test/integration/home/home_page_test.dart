@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inotes/core/app.dart';
@@ -55,16 +54,16 @@ void main() {
 
     setUpAll(() async {
       setup = await fakeBootstrap();
-      await setup.fakeFirestore.collection('notes').add({
-        'title': 'Shopping List',
-        'content': 'Milk, eggs, bread',
-        'createdAt': Timestamp.fromDate(DateTime(2026, 6, 10)),
-      });
-      await setup.fakeFirestore.collection('notes').add({
-        'title': 'Meeting Notes',
-        'content': 'Discuss roadmap',
-        'createdAt': Timestamp.fromDate(DateTime(2026, 6, 9)),
-      });
+      await setup.fakeFirestore.seedNote(
+        title: 'Shopping List',
+        content: 'Milk, eggs, bread',
+        createdAt: DateTime(2026, 6, 10),
+      );
+      await setup.fakeFirestore.seedNote(
+        title: 'Meeting Notes',
+        content: 'Discuss roadmap',
+        createdAt: DateTime(2026, 6, 9),
+      );
     });
 
     testWidgets('shows note titles in list', (tester) async {

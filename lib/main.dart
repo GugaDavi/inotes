@@ -4,6 +4,6 @@ import 'package:inotes/core/bootstrap.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final routes = await bootstrap();
-  runApp(App(routes: routes));
+  final (:routes, :initialRoute) = await bootstrap();
+  runApp(App(routes: routes, initialRoute: initialRoute));
 }

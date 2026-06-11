@@ -36,9 +36,19 @@ class FirestoreServiceImpl implements FirestoreService {
   }
 
   @override
-  Future<List<FirestoreDocument>> getAll({required String collection, String? orderBy, bool descending = false}) async {
+  Future<List<FirestoreDocument>> getAll({
+    required String collection,
+    String? orderBy,
+    bool descending = false,
+    Map<String, Object?>? where,
+  }) async {
     try {
       Query<Map<String, dynamic>> query = _collection(collection);
+      if (where != null) {
+        for (final entry in where.entries) {
+          query = query.where(entry.key, isEqualTo: entry.value);
+        }
+      }
       if (orderBy != null) {
         query = query.orderBy(orderBy, descending: descending);
       }

@@ -70,6 +70,25 @@ void main() {
       expect(result.first.data['title'], 'New');
       expect(result.last.data['title'], 'Old');
     });
+
+    test('filters documents by where field equals value', () async {
+      await fakeFirestore.collection(collection).add({'title': 'User A Note', 'userId': 'user-a'});
+      await fakeFirestore.collection(collection).add({'title': 'User B Note', 'userId': 'user-b'});
+
+      final result = await service.getAll(collection: collection, where: {'userId': 'user-a'});
+
+      expect(result, hasLength(1));
+      expect(result.first.data['title'], 'User A Note');
+    });
+
+    test('returns all documents when where is null', () async {
+      await fakeFirestore.collection(collection).add({'title': 'Note 1', 'userId': 'user-a'});
+      await fakeFirestore.collection(collection).add({'title': 'Note 2', 'userId': 'user-b'});
+
+      final result = await service.getAll(collection: collection);
+
+      expect(result, hasLength(2));
+    });
   });
 
   group('update', () {

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/ui/ui.dart';
@@ -36,77 +37,133 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      backgroundColor: AppColors.background,
-      child: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.sm),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'iNotes',
-                              style: TextStyle(
-                                fontSize: 34,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.41,
-                                color: CupertinoColors.label,
-                              ),
-                            ),
-                            PrimaryButton(label: 'New Note', onPressed: _openNote),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SliverToBoxAdapter(
-                      child: Padding(padding: EdgeInsets.all(AppSpacing.lg), child: CupertinoSearchTextField()),
-                    ),
-                    BlocBuilder<HomeCubit, HomeState>(
-                      bloc: _cubit,
-                      builder: (context, state) => switch (state) {
-                        HomeInitial() ||
-                        HomeLoading() => const SliverFillRemaining(child: Center(child: CupertinoActivityIndicator())),
-                        HomeLoaded(:final notes) when notes.isEmpty => SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: _EmptyState(onCreateNote: _openNote),
-                        ),
-                        HomeLoaded(:final notes) => SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                          sliver: SliverList.builder(
-                            itemCount: notes.length,
-                            itemBuilder: (context, index) =>
-                                NoteListTile(note: notes[index], onTap: () => _openNote(notes[index])),
-                          ),
-                        ),
-                        HomeError() => const SliverFillRemaining(
-                          child: Center(
-                            child: Text(
-                              'Could not load notes.',
-                              style: TextStyle(color: CupertinoColors.secondaryLabel),
-                            ),
-                          ),
-                        ),
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
+  void _showSessionDialog(String sessionCode) {
+    showCupertinoDialog<void>(
+      context: context,
+      builder: (_) => CupertinoAlertDialog(
+        title: const Text('Session'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            const Text('Your session code:'),
+            const SizedBox(height: 8),
+            Text(sessionCode, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: 3)),
+            const SizedBox(height: 8),
+            const Text('Save this code to access your notes from another device.', style: TextStyle(fontSize: 12)),
+          ],
+        ),
+        actions: [
+          CupertinoDialogAction(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+              _cubit.logout();
+            },
+            child: const Text('Logout'),
           ),
-          _BottomBar(cubit: _cubit),
         ],
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<HomeCubit, HomeState>(
+      bloc: _cubit,
+      listener: (context, state) {
+        if (state is HomeLoggedOut) {
+          Navigator.of(context).pushReplacementNamed('/auth');
+        }
+      },
+      builder: (context, state) {
+        return CupertinoPageScaffold(
+          backgroundColor: AppColors.background,
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.lg,
+                              AppSpacing.lg,
+                              AppSpacing.lg,
+                              AppSpacing.sm,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'iNotes',
+                                  style: TextStyle(
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.41,
+                                    color: CupertinoColors.label,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    if (_cubit.sessionCode != null)
+                                      CupertinoButton(
+                                        padding: EdgeInsets.zero,
+                                        onPressed: () => _showSessionDialog(_cubit.sessionCode!),
+                                        child: const Icon(CupertinoIcons.person_circle),
+                                      ),
+                                    const SizedBox(width: AppSpacing.sm),
+                                    PrimaryButton(label: 'New Note', onPressed: _openNote),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SliverToBoxAdapter(
+                          child: Padding(padding: EdgeInsets.all(AppSpacing.lg), child: CupertinoSearchTextField()),
+                        ),
+                        switch (state) {
+                          HomeInitial() || HomeLoading() || HomeLoggedOut() => const SliverFillRemaining(
+                            child: Center(child: CupertinoActivityIndicator()),
+                          ),
+                          HomeLoaded(:final notes) when notes.isEmpty => SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: _EmptyState(onCreateNote: _openNote),
+                          ),
+                          HomeLoaded(:final notes) => SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                            sliver: SliverList.builder(
+                              itemCount: notes.length,
+                              itemBuilder: (context, index) =>
+                                  NoteListTile(note: notes[index], onTap: () => _openNote(notes[index])),
+                            ),
+                          ),
+                          HomeError() => const SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Text(
+                                'Could not load notes.',
+                                style: TextStyle(color: CupertinoColors.secondaryLabel),
+                              ),
+                            ),
+                          ),
+                        },
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              _BottomBar(cubit: _cubit),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -157,6 +214,43 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
+class _CopyButton extends StatefulWidget {
+  const _CopyButton({required this.text});
+
+  final String text;
+
+  @override
+  State<_CopyButton> createState() => _CopyButtonState();
+}
+
+class _CopyButtonState extends State<_CopyButton> {
+  bool _copied = false;
+
+  Future<void> _copy() async {
+    await Clipboard.setData(ClipboardData(text: widget.text));
+    setState(() => _copied = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _copied = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      minimumSize: const Size(24, 24),
+      onPressed: _copy,
+      child: Icon(
+        _copied ? CupertinoIcons.checkmark_circle : CupertinoIcons.doc_on_doc,
+        size: 14,
+        color: _copied
+            ? CupertinoColors.systemGreen.resolveFrom(context)
+            : CupertinoColors.secondaryLabel.resolveFrom(context),
+      ),
+    );
+  }
+}
+
 class _BottomBar extends StatelessWidget {
   const _BottomBar({required this.cubit});
 
@@ -181,10 +275,34 @@ class _BottomBar extends StatelessWidget {
                 bloc: cubit,
                 builder: (context, state) {
                   final count = state is HomeLoaded ? state.notes.length : 0;
-                  return Text(
-                    count == 1 ? '1 Note' : '$count Notes',
-                    style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel),
-                    textAlign: TextAlign.center,
+                  final sessionCode = cubit.sessionCode;
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (sessionCode != null)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              sessionCode,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: CupertinoColors.secondaryLabel,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            _CopyButton(text: sessionCode),
+                          ],
+                        )
+                      else
+                        const SizedBox.shrink(),
+                      Text(
+                        count == 1 ? '1 Note' : '$count Notes',
+                        style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel),
+                      ),
+                    ],
                   );
                 },
               ),

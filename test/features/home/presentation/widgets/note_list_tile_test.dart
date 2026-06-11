@@ -5,6 +5,7 @@ import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 
 NoteEntity _note({String title = 'My Note', String content = 'Some content'}) => NoteEntity(
   id: '1',
+  userId: 'user-a',
   title: title,
   content: content,
   createdAt: DateTime(2020, 1, 1),

@@ -19,47 +19,44 @@ void main() {
   });
 
   group('CreateNoteUseCase', () {
-    final tNote = NoteEntity(id: '1', title: 'Test Title', content: 'Test content', createdAt: DateTime(2026, 6, 9));
+    final tNote = NoteEntity(
+      id: '1',
+      userId: 'user-a',
+      title: 'Test Title',
+      content: 'Test content',
+      createdAt: DateTime(2026, 6, 9),
+    );
 
     test('should return Failure(EmptyTitleFailure) when title is empty', () async {
-      final result = await useCase.execute(title: '', content: 'Test content');
+      final result = await useCase.execute(userId: 'user-a', title: '', content: 'Test content');
 
       expect(result, isA<Failure<NoteEntity>>());
       expect((result as Failure<NoteEntity>).failure, isA<EmptyTitleFailure>());
       verifyNever(
-        () => mockRepository.create(
-          title: any(named: 'title'),
-          content: any(named: 'content'),
-        ),
+        () => mockRepository.create(userId: any(named: 'userId'), title: any(named: 'title'), content: any(named: 'content')),
       );
     });
 
     test('should return Failure(EmptyTitleFailure) when title is whitespace only', () async {
-      final result = await useCase.execute(title: '   ', content: 'Test content');
+      final result = await useCase.execute(userId: 'user-a', title: '   ', content: 'Test content');
 
       expect(result, isA<Failure<NoteEntity>>());
       expect((result as Failure<NoteEntity>).failure, isA<EmptyTitleFailure>());
       verifyNever(
-        () => mockRepository.create(
-          title: any(named: 'title'),
-          content: any(named: 'content'),
-        ),
+        () => mockRepository.create(userId: any(named: 'userId'), title: any(named: 'title'), content: any(named: 'content')),
       );
     });
 
     test('should call repository and return Success(NoteEntity) when title is valid', () async {
       when(
-        () => mockRepository.create(
-          title: any(named: 'title'),
-          content: any(named: 'content'),
-        ),
+        () => mockRepository.create(userId: any(named: 'userId'), title: any(named: 'title'), content: any(named: 'content')),
       ).thenAnswer((_) async => Success(tNote));
 
-      final result = await useCase.execute(title: 'Test Title', content: 'Test content');
+      final result = await useCase.execute(userId: 'user-a', title: 'Test Title', content: 'Test content');
 
       expect(result, isA<Success<NoteEntity>>());
       expect((result as Success<NoteEntity>).value, tNote);
-      verify(() => mockRepository.create(title: 'Test Title', content: 'Test content')).called(1);
+      verify(() => mockRepository.create(userId: 'user-a', title: 'Test Title', content: 'Test content')).called(1);
     });
   });
 }

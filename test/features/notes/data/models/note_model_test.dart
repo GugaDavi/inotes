@@ -7,26 +7,45 @@ void main() {
 
   group('NoteModel', () {
     test('is a NoteEntity', () {
-      final model = NoteModel(id: '1', title: 'Title', content: 'Content', createdAt: tCreatedAt);
+      final model = NoteModel(
+        id: '1',
+        userId: 'user-a',
+        title: 'Title',
+        content: 'Content',
+        createdAt: tCreatedAt,
+      );
 
       expect(model, isA<NoteEntity>());
     });
 
     test('fromMap creates model from plain dart map', () {
-      final model = NoteModel.fromMap('1', {'title': 'Title', 'content': 'Content', 'createdAt': tCreatedAt});
+      final model = NoteModel.fromMap('1', {
+        'userId': 'user-a',
+        'title': 'Title',
+        'content': 'Content',
+        'createdAt': tCreatedAt,
+      });
 
       expect(model.id, '1');
+      expect(model.userId, 'user-a');
       expect(model.title, 'Title');
       expect(model.content, 'Content');
       expect(model.createdAt, tCreatedAt);
     });
 
     test('toMap returns map without id', () {
-      final model = NoteModel(id: '1', title: 'Title', content: 'Content', createdAt: tCreatedAt);
+      final model = NoteModel(
+        id: '1',
+        userId: 'user-a',
+        title: 'Title',
+        content: 'Content',
+        createdAt: tCreatedAt,
+      );
 
       final map = model.toMap();
 
       expect(map.containsKey('id'), isFalse);
+      expect(map['userId'], 'user-a');
       expect(map['title'], 'Title');
       expect(map['content'], 'Content');
       expect(map['createdAt'], tCreatedAt);

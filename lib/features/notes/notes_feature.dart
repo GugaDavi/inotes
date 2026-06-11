@@ -1,5 +1,6 @@
 import 'package:inotes/core/contracts/feature_app.dart';
 import 'package:inotes/core/di/locator.dart';
+import 'package:inotes/features/auth/domain/usecases/get_current_session_use_case.dart';
 import 'package:inotes/features/notes/data/repositories/notes_repository_impl.dart';
 import 'package:inotes/features/notes/domain/repositories/notes_repository.dart';
 import 'package:inotes/features/notes/domain/usecases/create_note_use_case.dart';
@@ -35,6 +36,7 @@ class NotesFeature implements FeatureApp {
         Locator.get<CreateNoteUseCase>(),
         Locator.get<UpdateNoteUseCase>(),
         Locator.get<DeleteNoteUseCase>(),
+        Locator.get<GetCurrentSessionUseCase>(),
       ),
     );
   }
