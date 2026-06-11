@@ -33,22 +33,25 @@ class _AuthPageState extends State<AuthPage> {
           }
         },
         builder: (context, state) {
+          final Widget child;
           if (state is AuthSessionCreated) {
-            return _AuthScaffold(
-              child: _CodeCreatedView(
-                code: state.code,
-                onContinue: () => context.read<AuthCubit>().confirmNewSession(),
-              ),
+            child = _CodeCreatedView(
+              key: const ValueKey('code_created'),
+              code: state.code,
+              onContinue: () => context.read<AuthCubit>().confirmNewSession(),
             );
-          }
-          return _AuthScaffold(
-            child: _FormView(
+          } else {
+            child = _FormView(
+              key: const ValueKey('form'),
               controller: _controller,
               isLoading: state is AuthLoading,
               error: state is AuthError ? state.message : null,
               onEnter: () => context.read<AuthCubit>().enterCode(_controller.text),
               onNewSession: () => context.read<AuthCubit>().startNewSession(),
-            ),
+            );
+          }
+          return _AuthScaffold(
+            child: AnimatedSwitcher(duration: const Duration(milliseconds: 250), child: child),
           );
         },
       ),
@@ -87,6 +90,7 @@ class _AuthScaffold extends StatelessWidget {
 
 class _FormView extends StatelessWidget {
   const _FormView({
+    super.key,
     required this.controller,
     required this.isLoading,
     required this.error,
@@ -153,7 +157,7 @@ class _FormView extends StatelessWidget {
 }
 
 class _CodeCreatedView extends StatelessWidget {
-  const _CodeCreatedView({required this.code, required this.onContinue});
+  const _CodeCreatedView({super.key, required this.code, required this.onContinue});
 
   final String code;
   final VoidCallback onContinue;
