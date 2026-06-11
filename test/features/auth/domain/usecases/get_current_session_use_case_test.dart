@@ -32,8 +32,7 @@ void main() {
     });
 
     test('returns Failure(SessionNotFoundFailure) when no session exists', () async {
-      when(() => mockRepository.getCurrentSession())
-          .thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
+      when(() => mockRepository.getCurrentSession()).thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
 
       final result = await useCase.execute();
 

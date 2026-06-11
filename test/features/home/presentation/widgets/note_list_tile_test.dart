@@ -3,38 +3,61 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inotes/features/home/presentation/widgets/note_list_tile.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 
-NoteEntity _note({String title = 'My Note', String content = 'Some content'}) => NoteEntity(
-  id: '1',
-  userId: 'user-a',
-  title: title,
-  content: content,
-  createdAt: DateTime(2020, 1, 1),
-);
+NoteEntity _note({String title = 'My Note', String content = 'Some content'}) =>
+    NoteEntity(id: '1', userId: 'user-a', title: title, content: content, createdAt: DateTime(2020, 1, 1));
 
 Widget _wrap(Widget child) => CupertinoApp(home: CupertinoPageScaffold(child: child));
 
 void main() {
   group('NoteListTile', () {
     testWidgets('renders the note title', (tester) async {
-      await tester.pumpWidget(_wrap(NoteListTile(note: _note(title: 'Shopping list'), onTap: () {})));
+      await tester.pumpWidget(
+        _wrap(
+          NoteListTile(
+            note: _note(title: 'Shopping list'),
+            onTap: () {},
+          ),
+        ),
+      );
 
       expect(find.text('Shopping list'), findsOneWidget);
     });
 
     testWidgets('shows New Note when title is empty', (tester) async {
-      await tester.pumpWidget(_wrap(NoteListTile(note: _note(title: ''), onTap: () {})));
+      await tester.pumpWidget(
+        _wrap(
+          NoteListTile(
+            note: _note(title: ''),
+            onTap: () {},
+          ),
+        ),
+      );
 
       expect(find.text('New Note'), findsOneWidget);
     });
 
     testWidgets('renders the note content', (tester) async {
-      await tester.pumpWidget(_wrap(NoteListTile(note: _note(content: 'Buy milk'), onTap: () {})));
+      await tester.pumpWidget(
+        _wrap(
+          NoteListTile(
+            note: _note(content: 'Buy milk'),
+            onTap: () {},
+          ),
+        ),
+      );
 
       expect(find.text('Buy milk'), findsOneWidget);
     });
 
     testWidgets('shows No additional text when content is empty', (tester) async {
-      await tester.pumpWidget(_wrap(NoteListTile(note: _note(content: ''), onTap: () {})));
+      await tester.pumpWidget(
+        _wrap(
+          NoteListTile(
+            note: _note(content: ''),
+            onTap: () {},
+          ),
+        ),
+      );
 
       expect(find.text('No additional text'), findsOneWidget);
     });

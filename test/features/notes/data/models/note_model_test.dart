@@ -7,13 +7,7 @@ void main() {
 
   group('NoteModel', () {
     test('is a NoteEntity', () {
-      final model = NoteModel(
-        id: '1',
-        userId: 'user-a',
-        title: 'Title',
-        content: 'Content',
-        createdAt: tCreatedAt,
-      );
+      final model = NoteModel(id: '1', userId: 'user-a', title: 'Title', content: 'Content', createdAt: tCreatedAt);
 
       expect(model, isA<NoteEntity>());
     });
@@ -34,13 +28,7 @@ void main() {
     });
 
     test('toMap returns map without id', () {
-      final model = NoteModel(
-        id: '1',
-        userId: 'user-a',
-        title: 'Title',
-        content: 'Content',
-        createdAt: tCreatedAt,
-      );
+      final model = NoteModel(id: '1', userId: 'user-a', title: 'Title', content: 'Content', createdAt: tCreatedAt);
 
       final map = model.toMap();
 

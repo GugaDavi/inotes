@@ -1,13 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inotes/core/di/locator.dart';
+import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/home/presentation/cubit/home_cubit.dart';
 import 'package:inotes/features/home/presentation/cubit/home_state.dart';
 import 'package:inotes/features/home/presentation/widgets/note_list_tile.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
-import 'package:inotes/features/shared/widgets/buttons/primary_button.dart';
 import 'package:inotes/features/shared/widgets/buttons/copy_button.dart';
+import 'package:inotes/features/shared/widgets/buttons/primary_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,7 +34,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openNote([NoteEntity? note]) {
-    Navigator.of(context).pushNamed('/note', arguments: note).then((result) {
+    final path = note == null ? '/notes/new' : '/notes/${note.id}';
+    context.push(path, extra: note).then((result) {
       if (result == true) _cubit.loadNotes();
     });
   }
@@ -82,7 +85,7 @@ class _HomePageState extends State<HomePage> {
       bloc: _cubit,
       listener: (context, state) {
         if (state is HomeLoggedOut) {
-          Navigator.of(context).pushReplacementNamed('/auth');
+          Locator.get<AuthStateNotifier>().setAuthenticated(false);
         }
       },
       builder: (context, state) {

@@ -42,6 +42,22 @@ final class NoteDetailDeleted extends NoteDetailState {
   List<Object?> get props => [];
 }
 
+final class NoteDetailFetchingNote extends NoteDetailState {
+  const NoteDetailFetchingNote();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class NoteDetailNoteReady extends NoteDetailState {
+  const NoteDetailNoteReady(this.note);
+
+  final NoteEntity note;
+
+  @override
+  List<Object?> get props => [note];
+}
+
 final class NoteDetailError extends NoteDetailState {
   const NoteDetailError(this.message);
 

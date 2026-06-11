@@ -28,8 +28,7 @@ void main() {
     });
 
     test('returns Failure when repository fails', () async {
-      when(() => mockRepository.clearSession())
-          .thenAnswer((_) async => const Failure(SessionStorageFailure()));
+      when(() => mockRepository.clearSession()).thenAnswer((_) async => const Failure(SessionStorageFailure()));
 
       final result = await useCase.execute();
 

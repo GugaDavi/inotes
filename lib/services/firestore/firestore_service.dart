@@ -16,5 +16,7 @@ abstract interface class FirestoreService {
     required Map<String, dynamic> data,
   });
 
+  Future<FirestoreDocument> get({required String collection, required String id});
+
   Future<void> delete({required String collection, required String id});
 }

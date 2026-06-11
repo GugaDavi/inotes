@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:go_router/go_router.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inotes/core/di/locator.dart';
@@ -9,8 +11,9 @@ import 'package:inotes/features/notes/presentation/cubit/note_detail_cubit.dart'
 import 'package:inotes/features/notes/presentation/cubit/note_detail_state.dart';
 
 class NoteDetailPage extends StatefulWidget {
-  const NoteDetailPage({super.key, this.note});
+  const NoteDetailPage({super.key, required this.noteId, this.note});
 
+  final String noteId;
   final NoteEntity? note;
 
   @override
@@ -22,7 +25,12 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
 
-  bool get _isEditing => widget.note != null;
+  NoteEntity? _loadedNote;
+
+  bool get _isNew => widget.noteId == 'new';
+  bool get _isEditing => !_isNew;
+
+  NoteEntity? get _effectiveNote => widget.note ?? _loadedNote;
 
   @override
   void initState() {
@@ -30,6 +38,10 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     _cubit = Locator.get<NoteDetailCubit>();
     _titleController = TextEditingController(text: widget.note?.title ?? '');
     _contentController = TextEditingController(text: widget.note?.content ?? '');
+
+    if (_isEditing && widget.note == null) {
+      _cubit.loadNote(id: widget.noteId);
+    }
   }
 
   @override
@@ -41,10 +53,15 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
   }
 
   void _save() {
-    _cubit.save(id: widget.note?.id, title: _titleController.text, content: _contentController.text);
+    _cubit.save(
+      id: _isEditing ? (_effectiveNote?.id ?? widget.noteId) : null,
+      title: _titleController.text,
+      content: _contentController.text,
+    );
   }
 
   void _confirmDelete() {
+    final id = _effectiveNote?.id ?? widget.noteId;
     showCupertinoDialog<void>(
       context: context,
       builder: (_) => CupertinoAlertDialog(
@@ -55,7 +72,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
             isDestructiveAction: true,
             onPressed: () {
               Navigator.of(context).pop();
-              _cubit.delete(id: widget.note!.id);
+              _cubit.delete(id: id);
             },
             child: const Text('Delete'),
           ),
@@ -67,13 +84,18 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<NoteDetailCubit, NoteDetailState>(
+    return BlocConsumer<NoteDetailCubit, NoteDetailState>(
       bloc: _cubit,
       listener: (context, state) {
-        if (state is NoteDetailSaved || state is NoteDetailDeleted) {
-          Navigator.of(context).pop(true);
+        if (state is NoteDetailNoteReady) {
+          _loadedNote = state.note;
+          _titleController.text = state.note.title;
+          _contentController.text = state.note.content;
         }
-        if (state is NoteDetailError) {
+        if (state is NoteDetailSaved || state is NoteDetailDeleted) {
+          context.pop(true);
+        }
+        if (state is NoteDetailError && (state is! NoteDetailFetchingNote)) {
           showCupertinoDialog<void>(
             context: context,
             builder: (_) => CupertinoAlertDialog(
@@ -84,42 +106,63 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
           );
         }
       },
-      child: SizedBox.expand(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => Navigator.of(context).pop(false),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: const ColoredBox(color: AppColors.scrim),
+      builder: (context, state) {
+        return SizedBox.expand(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => context.pop(false),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: const ColoredBox(color: AppColors.scrim),
+                  ),
                 ),
               ),
-            ),
-            Center(
-              child: GestureDetector(
-                onTap: () {},
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: AppSpacing.maxModalWidth),
-                    child: _NoteDetailCard(
-                      cubit: _cubit,
-                      isEditing: _isEditing,
-                      titleController: _titleController,
-                      contentController: _contentController,
-                      onSave: _save,
-                      onCancel: () => Navigator.of(context).pop(false),
-                      onDelete: _isEditing ? _confirmDelete : null,
+              Center(
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: AppSpacing.maxModalWidth),
+                      child: state is NoteDetailFetchingNote
+                          ? const _LoadingCard()
+                          : _NoteDetailCard(
+                              cubit: _cubit,
+                              isEditing: _isEditing,
+                              titleController: _titleController,
+                              contentController: _contentController,
+                              onSave: _save,
+                              onCancel: () => context.pop(false),
+                              onDelete: _isEditing ? _confirmDelete : null,
+                            ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LoadingCard extends StatelessWidget {
+  const _LoadingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: CupertinoColors.systemBackground,
+        borderRadius: BorderRadius.circular(AppSpacing.md),
       ),
+      child: const Center(child: CupertinoActivityIndicator()),
     );
   }
 }

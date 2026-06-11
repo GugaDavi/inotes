@@ -10,24 +10,24 @@ void main() {
   group('AuthPage - form', () {
     late AppTestSetup setup;
 
-    setUpAll(() async => setup = await fakeBootstrap());
+    setUpAll(() async => setup = await fakeBootstrap(authenticated: false));
 
     testWidgets('shows Session Code label', (tester) async {
-      await tester.pumpWidget(App(routes: setup.routes, initialRoute: '/auth'));
+      await tester.pumpWidget(App(authNotifier: setup.notifier));
       await tester.pumpAndSettle();
 
       expect(find.text('Session Code'), findsOneWidget);
     });
 
     testWidgets('shows code input field', (tester) async {
-      await tester.pumpWidget(App(routes: setup.routes, initialRoute: '/auth'));
+      await tester.pumpWidget(App(authNotifier: setup.notifier));
       await tester.pumpAndSettle();
 
       expect(_codeField(), findsOneWidget);
     });
 
     testWidgets('shows Enter and Start New Session buttons', (tester) async {
-      await tester.pumpWidget(App(routes: setup.routes, initialRoute: '/auth'));
+      await tester.pumpWidget(App(authNotifier: setup.notifier));
       await tester.pumpAndSettle();
 
       expect(find.text('Enter'), findsOneWidget);
@@ -35,7 +35,7 @@ void main() {
     });
 
     testWidgets('shows error when submitting empty code', (tester) async {
-      await tester.pumpWidget(App(routes: setup.routes, initialRoute: '/auth'));
+      await tester.pumpWidget(App(authNotifier: setup.notifier));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Enter'));
@@ -48,10 +48,10 @@ void main() {
   group('AuthPage - enter existing code', () {
     late AppTestSetup setup;
 
-    setUp(() async => setup = await fakeBootstrap());
+    setUp(() async => setup = await fakeBootstrap(authenticated: false));
 
     testWidgets('navigates away from auth after entering a valid code', (tester) async {
-      await tester.pumpWidget(App(routes: setup.routes, initialRoute: '/auth'));
+      await tester.pumpWidget(App(authNotifier: setup.notifier));
       await tester.pumpAndSettle();
 
       await tester.enterText(_codeField(), testSessionCode);
@@ -66,10 +66,10 @@ void main() {
   group('AuthPage - new session', () {
     late AppTestSetup setup;
 
-    setUp(() async => setup = await fakeBootstrap());
+    setUp(() async => setup = await fakeBootstrap(authenticated: false));
 
     testWidgets('shows generated code after tapping Start New Session', (tester) async {
-      await tester.pumpWidget(App(routes: setup.routes, initialRoute: '/auth'));
+      await tester.pumpWidget(App(authNotifier: setup.notifier));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Start New Session'));
@@ -80,7 +80,7 @@ void main() {
     });
 
     testWidgets('navigates away from auth after confirming new session', (tester) async {
-      await tester.pumpWidget(App(routes: setup.routes, initialRoute: '/auth'));
+      await tester.pumpWidget(App(authNotifier: setup.notifier));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Start New Session'));

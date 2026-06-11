@@ -1,21 +1,39 @@
 import 'package:flutter/cupertino.dart';
-import 'package:inotes/core/contracts/feature_app.dart';
+import 'package:inotes/core/router/app_router.dart';
+import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/core/ui/ui.dart';
 
-class App extends StatelessWidget {
-  const App({super.key, required this.routes, this.initialRoute = '/'});
+class App extends StatefulWidget {
+  const App({super.key, required this.authNotifier});
 
-  final Map<String, FeatureRoute> routes;
-  final String initialRoute;
+  final AuthStateNotifier authNotifier;
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  late final AppRouter _appRouter;
+
+  @override
+  void initState() {
+    super.initState();
+    _appRouter = AppRouter(authNotifier: widget.authNotifier);
+  }
+
+  @override
+  void dispose() {
+    _appRouter.router.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
+    return CupertinoApp.router(
       title: 'iNotes',
       theme: const CupertinoThemeData(brightness: Brightness.light, primaryColor: AppColors.accent),
-      initialRoute: initialRoute,
       debugShowCheckedModeBanner: false,
-      onGenerateRoute: (settings) => routes[settings.name]?.call(settings),
+      routerConfig: _appRouter.router,
     );
   }
 }

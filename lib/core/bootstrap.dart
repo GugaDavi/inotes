@@ -3,6 +3,7 @@ import 'package:inotes/core/contracts/feature_app.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/env/dotenv_loader.dart';
 import 'package:inotes/core/result/result.dart';
+import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/features/auth/auth_feature.dart';
 import 'package:inotes/features/auth/domain/repositories/session_repository.dart';
 import 'package:inotes/features/home/home_feature.dart';
@@ -11,9 +12,7 @@ import 'package:inotes/services/firebase/firebase_client_impl.dart';
 import 'package:inotes/services/services_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-typedef AppBootstrap = ({Map<String, FeatureRoute> routes, String initialRoute});
-
-Future<AppBootstrap> bootstrap() async {
+Future<AuthStateNotifier> bootstrap() async {
   final env = DotenvLoader(dotenv);
   await env.load();
 
@@ -30,9 +29,10 @@ Future<AppBootstrap> bootstrap() async {
   }
 
   final sessionResult = await Locator.get<SessionRepository>().getCurrentSession();
-  final initialRoute = sessionResult is Success ? '/' : '/auth';
+  final isAuthenticated = sessionResult is Success;
 
-  final routes = features.fold<Map<String, FeatureRoute>>({}, (acc, feature) => acc..addAll(feature.routes));
+  final authNotifier = AuthStateNotifier(isAuthenticated: isAuthenticated);
+  Locator.registerSingleton<AuthStateNotifier>(authNotifier);
 
-  return (routes: routes, initialRoute: initialRoute);
+  return authNotifier;
 }

@@ -33,7 +33,11 @@ void main() {
       expect(result, isA<Failure<NoteEntity>>());
       expect((result as Failure<NoteEntity>).failure, isA<EmptyTitleFailure>());
       verifyNever(
-        () => mockRepository.create(userId: any(named: 'userId'), title: any(named: 'title'), content: any(named: 'content')),
+        () => mockRepository.create(
+          userId: any(named: 'userId'),
+          title: any(named: 'title'),
+          content: any(named: 'content'),
+        ),
       );
     });
 
@@ -43,13 +47,21 @@ void main() {
       expect(result, isA<Failure<NoteEntity>>());
       expect((result as Failure<NoteEntity>).failure, isA<EmptyTitleFailure>());
       verifyNever(
-        () => mockRepository.create(userId: any(named: 'userId'), title: any(named: 'title'), content: any(named: 'content')),
+        () => mockRepository.create(
+          userId: any(named: 'userId'),
+          title: any(named: 'title'),
+          content: any(named: 'content'),
+        ),
       );
     });
 
     test('should call repository and return Success(NoteEntity) when title is valid', () async {
       when(
-        () => mockRepository.create(userId: any(named: 'userId'), title: any(named: 'title'), content: any(named: 'content')),
+        () => mockRepository.create(
+          userId: any(named: 'userId'),
+          title: any(named: 'title'),
+          content: any(named: 'content'),
+        ),
       ).thenAnswer((_) async => Success(tNote));
 
       final result = await useCase.execute(userId: 'user-a', title: 'Test Title', content: 'Test content');

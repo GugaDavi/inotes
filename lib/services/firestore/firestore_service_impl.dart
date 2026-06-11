@@ -77,6 +77,17 @@ class FirestoreServiceImpl implements FirestoreService {
   }
 
   @override
+  Future<FirestoreDocument> get({required String collection, required String id}) async {
+    try {
+      final doc = await _collection(collection).doc(id).get();
+      if (!doc.exists) throw const DocumentNotFoundException();
+      return (id: id, data: _fromFirestore(doc.data()!));
+    } on FirebaseException catch (e) {
+      throw FirestoreOperationException(e.message);
+    }
+  }
+
+  @override
   Future<void> delete({required String collection, required String id}) async {
     try {
       await _collection(collection).doc(id).delete();
