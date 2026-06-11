@@ -8,10 +8,7 @@ import 'package:inotes/features/auth/domain/repositories/session_repository.dart
 import 'package:inotes/features/home/home_feature.dart';
 import 'package:inotes/features/notes/notes_feature.dart';
 import 'package:inotes/services/firebase/firebase_client_impl.dart';
-import 'package:inotes/services/firestore/firestore_service.dart';
-import 'package:inotes/services/firestore/firestore_service_impl.dart';
-import 'package:inotes/services/local_storage/local_storage.dart';
-import 'package:inotes/services/local_storage/local_storage_impl.dart';
+import 'package:inotes/services/services_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 typedef AppBootstrap = ({Map<String, FeatureRoute> routes, String initialRoute});
@@ -24,8 +21,7 @@ Future<AppBootstrap> bootstrap() async {
   await firebase.initialize();
 
   final prefs = await SharedPreferences.getInstance();
-  Locator.registerSingleton<LocalStorage>(LocalStorageImpl(prefs));
-  Locator.registerFactory<FirestoreService>(() => FirestoreServiceImpl(firebase));
+  ServicesDI.initialize(firebase: firebase, prefs: prefs);
 
   final features = <FeatureApp>[AuthFeature(), NotesFeature(), HomeFeature()];
   for (final feature in features) {

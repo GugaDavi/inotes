@@ -53,11 +53,15 @@ void main() {
         build: buildCubit,
         setUp: () {
           when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
-          when(() => mockGetNotesUseCase.execute(userId: any(named: 'userId')))
-              .thenAnswer((_) async => Success([tNote]));
+          when(
+            () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+          ).thenAnswer((_) async => Success([tNote]));
         },
         act: (cubit) => cubit.loadNotes(),
-        expect: () => [const HomeLoading(), HomeLoaded([tNote], tSession.code)],
+        expect: () => [
+          const HomeLoading(),
+          HomeLoaded([tNote], tSession.code),
+        ],
       );
 
       blocTest<HomeCubit, HomeState>(
@@ -65,8 +69,9 @@ void main() {
         build: buildCubit,
         setUp: () {
           when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
-          when(() => mockGetNotesUseCase.execute(userId: any(named: 'userId')))
-              .thenAnswer((_) async => const Success([]));
+          when(
+            () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+          ).thenAnswer((_) async => const Success([]));
         },
         act: (cubit) => cubit.loadNotes(),
         expect: () => [const HomeLoading(), HomeLoaded(const [], tSession.code)],
@@ -76,8 +81,7 @@ void main() {
         'emits [HomeLoading, HomeError] when no session exists',
         build: buildCubit,
         setUp: () {
-          when(() => mockGetSessionUseCase.execute())
-              .thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
+          when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
         },
         act: (cubit) => cubit.loadNotes(),
         expect: () => [const HomeLoading(), const HomeError()],
@@ -88,12 +92,63 @@ void main() {
         build: buildCubit,
         setUp: () {
           when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
-          when(() => mockGetNotesUseCase.execute(userId: any(named: 'userId')))
-              .thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
+          when(
+            () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+          ).thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
         },
         act: (cubit) => cubit.loadNotes(),
         expect: () => [const HomeLoading(), const HomeError()],
       );
+    });
+
+    group('sessionCode field', () {
+      test('is set after successful loadNotes', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => const Success([]));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+        expect(cubit.sessionCode, tSession.code);
+        cubit.close();
+      });
+
+      test('is set even when notes fetch fails', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+        expect(cubit.sessionCode, tSession.code);
+        cubit.close();
+      });
+
+      test('is null when session is not found', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+        expect(cubit.sessionCode, isNull);
+        cubit.close();
+      });
+
+      test('is cleared after logout', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => const Success([]));
+        when(() => mockClearSessionUseCase.execute()).thenAnswer((_) async => const Success(null));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+        expect(cubit.sessionCode, tSession.code);
+        await cubit.logout();
+        expect(cubit.sessionCode, isNull);
+        cubit.close();
+      });
     });
 
     group('logout', () {
@@ -101,8 +156,7 @@ void main() {
         'clears session and emits HomeLoggedOut',
         build: buildCubit,
         setUp: () {
-          when(() => mockClearSessionUseCase.execute())
-              .thenAnswer((_) async => const Success(null));
+          when(() => mockClearSessionUseCase.execute()).thenAnswer((_) async => const Success(null));
         },
         act: (cubit) => cubit.logout(),
         expect: () => [isA<HomeLoggedOut>()],
@@ -112,8 +166,7 @@ void main() {
         'still emits HomeLoggedOut even when clearSession fails',
         build: buildCubit,
         setUp: () {
-          when(() => mockClearSessionUseCase.execute())
-              .thenAnswer((_) async => const Failure(SessionStorageFailure()));
+          when(() => mockClearSessionUseCase.execute()).thenAnswer((_) async => const Failure(SessionStorageFailure()));
         },
         act: (cubit) => cubit.logout(),
         expect: () => [isA<HomeLoggedOut>()],

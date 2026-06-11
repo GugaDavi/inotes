@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:inotes/features/auth/presentation/cubit/auth_state.dart';
+import 'package:inotes/features/shared/widgets/copy_button.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -152,43 +152,6 @@ class _FormView extends StatelessWidget {
   }
 }
 
-class _CopyButton extends StatefulWidget {
-  const _CopyButton({required this.text});
-
-  final String text;
-
-  @override
-  State<_CopyButton> createState() => _CopyButtonState();
-}
-
-class _CopyButtonState extends State<_CopyButton> {
-  bool _copied = false;
-
-  Future<void> _copy() async {
-    await Clipboard.setData(ClipboardData(text: widget.text));
-    setState(() => _copied = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _copied = false);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      minimumSize: const Size(32, 32),
-      onPressed: _copy,
-      child: Icon(
-        _copied ? CupertinoIcons.checkmark_circle : CupertinoIcons.doc_on_doc,
-        size: 20,
-        color: _copied
-            ? CupertinoColors.systemGreen.resolveFrom(context)
-            : CupertinoColors.secondaryLabel.resolveFrom(context),
-      ),
-    );
-  }
-}
-
 class _CodeCreatedView extends StatelessWidget {
   const _CodeCreatedView({required this.code, required this.onContinue});
 
@@ -219,7 +182,7 @@ class _CodeCreatedView extends StatelessWidget {
             children: [
               Text(code, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: 4)),
               const SizedBox(width: 12),
-              _CopyButton(text: code),
+              CopyButton(text: code, size: 20),
             ],
           ),
         ),

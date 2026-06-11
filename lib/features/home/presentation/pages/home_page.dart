@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/ui/ui.dart';
@@ -8,6 +7,7 @@ import 'package:inotes/features/home/presentation/cubit/home_state.dart';
 import 'package:inotes/features/home/presentation/widgets/note_list_tile.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/shared/widgets/buttons/primary_button.dart';
+import 'package:inotes/features/shared/widgets/copy_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -48,7 +48,15 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 8),
             const Text('Your session code:'),
             const SizedBox(height: 8),
-            Text(sessionCode, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: 3)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(sessionCode, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: 3)),
+                const SizedBox(width: 8),
+                CopyButton(text: sessionCode, size: 16),
+              ],
+            ),
             const SizedBox(height: 8),
             const Text('Save this code to access your notes from another device.', style: TextStyle(fontSize: 12)),
           ],
@@ -214,43 +222,6 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _CopyButton extends StatefulWidget {
-  const _CopyButton({required this.text});
-
-  final String text;
-
-  @override
-  State<_CopyButton> createState() => _CopyButtonState();
-}
-
-class _CopyButtonState extends State<_CopyButton> {
-  bool _copied = false;
-
-  Future<void> _copy() async {
-    await Clipboard.setData(ClipboardData(text: widget.text));
-    setState(() => _copied = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _copied = false);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      minimumSize: const Size(24, 24),
-      onPressed: _copy,
-      child: Icon(
-        _copied ? CupertinoIcons.checkmark_circle : CupertinoIcons.doc_on_doc,
-        size: 14,
-        color: _copied
-            ? CupertinoColors.systemGreen.resolveFrom(context)
-            : CupertinoColors.secondaryLabel.resolveFrom(context),
-      ),
-    );
-  }
-}
-
 class _BottomBar extends StatelessWidget {
   const _BottomBar({required this.cubit});
 
@@ -293,7 +264,7 @@ class _BottomBar extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            _CopyButton(text: sessionCode),
+                            CopyButton(text: sessionCode, size: 14),
                           ],
                         )
                       else
