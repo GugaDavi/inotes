@@ -19,10 +19,13 @@ Flutter Web notes application (COCUS frontend code challenge).
 ```
 lib/
   core/
-    theme/        # ThemeData, colors, typography
+    contracts/    # FeatureApp abstract class
+    di/           # Locator (GetIt wrapper)
+    env/          # .env loading
     errors/       # AppFailure base class only
     result/       # Result<T> sealed class (Success, Failure)
-    utils/        # shared helpers
+    router/       # AppRouter (all route declarations) + AuthStateNotifier
+    ui/           # AppColors, AppSpacing design tokens
   features/
     <feature>/
       domain/           # always present
@@ -38,6 +41,10 @@ lib/
         pages/          # full route screens
         widgets/        # feature-scoped reusable components
         cubit/          # XyzCubit + XyzState (one pair per UI context)
+    shared/
+      formatters/       # shared formatting utilities
+      widgets/          # cross-feature reusable components
+    splash/             # initial splash screen (Lottie animation shown before bootstrap)
 ```
 
 > A feature may contain only the `domain/` folder if it has no data or UI layer yet.
@@ -87,7 +94,7 @@ Cubit → UseCase → Repository → (DataSource?)
 #### Integration tests
 - Location: `test/integration/<feature>/` mirroring the `lib/` structure. Helper in `test/integration/helpers/`.
 - Each test pumps the full `App` widget with fake dependencies — no real Firebase, no browser required.
-- `fake_app_bootstrap.dart` resets `GetIt.instance`, registers `FirestoreService` backed by `FakeFirebaseFirestore`, initialises all features, and returns `AppTestSetup` (`routes` + `fakeFirestore`). Use `fakeFirestore` to seed data for scenarios that require pre-existing notes.
+- `fake_app_bootstrap.dart` resets `GetIt.instance`, registers `FirestoreService` backed by `FakeFirebaseFirestore`, initialises all features, and returns `AppTestSetup` (`notifier` + `fakeFirestore`). Pass `notifier` to `App(authNotifier:)`. Use `fakeFirestore` to seed data for scenarios that require pre-existing notes.
 - Use `setUpAll` for read-only groups (avoids redundant bootstraps). Use `setUp` for groups that write or mutate state.
 - When the note detail modal is open (`opaque: false`), the home page stays in the widget tree. Use `find.byWidgetPredicate` with the field's `placeholder` to target `CupertinoTextField` widgets unambiguously — `CupertinoSearchTextField` wraps a `CupertinoTextField` internally and would otherwise be picked up by `.first`/`.last`.
 - Run: `flutter test test/integration/`
@@ -97,7 +104,7 @@ Cubit → UseCase → Repository → (DataSource?)
 
 | Feature | Status |
 |---|---|
-| notes (CRUD) | pending |
+| notes (CRUD) | done |
 
 ## Firebase
 
