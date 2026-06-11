@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inotes/core/di/locator.dart';
+import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:inotes/features/auth/presentation/cubit/auth_state.dart';
@@ -29,7 +30,7 @@ class _AuthPageState extends State<AuthPage> {
       child: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            Navigator.pushReplacementNamed(context, '/');
+            Locator.get<AuthStateNotifier>().setAuthenticated(true);
           }
         },
         builder: (context, state) {

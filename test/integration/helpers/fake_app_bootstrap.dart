@@ -3,6 +3,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
 import 'package:inotes/core/contracts/feature_app.dart';
 import 'package:inotes/core/di/locator.dart';
+import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/features/auth/auth_feature.dart';
 import 'package:inotes/features/home/home_feature.dart';
 import 'package:inotes/features/notes/notes_feature.dart';
@@ -13,7 +14,7 @@ import 'package:inotes/services/local_storage/local_storage.dart';
 
 const testSessionCode = 'TEST0001';
 
-typedef AppTestSetup = ({Map<String, FeatureRoute> routes, FakeFirebaseFirestore fakeFirestore});
+typedef AppTestSetup = ({AuthStateNotifier notifier, FakeFirebaseFirestore fakeFirestore});
 
 class _FakeFirebaseClient implements FirebaseClient {
   _FakeFirebaseClient(this._firestore);
@@ -31,8 +32,12 @@ class _FakeFirebaseClient implements FirebaseClient {
 }
 
 class _FakeLocalStorage implements LocalStorage {
+  _FakeLocalStorage({this.sessionCode = testSessionCode});
+
+  final String? sessionCode;
+
   @override
-  Future<String?> getString(String key) async => testSessionCode;
+  Future<String?> getString(String key) async => sessionCode;
 
   @override
   Future<void> setString(String key, String value) async {}
@@ -41,13 +46,13 @@ class _FakeLocalStorage implements LocalStorage {
   Future<void> remove(String key) async {}
 }
 
-Future<AppTestSetup> fakeBootstrap() async {
+Future<AppTestSetup> fakeBootstrap({bool authenticated = true}) async {
   await GetIt.instance.reset();
 
   final fakeFirestore = FakeFirebaseFirestore();
   final fakeClient = _FakeFirebaseClient(fakeFirestore);
 
-  Locator.registerSingleton<LocalStorage>(_FakeLocalStorage());
+  Locator.registerSingleton<LocalStorage>(_FakeLocalStorage(sessionCode: authenticated ? testSessionCode : null));
   Locator.registerFactory<FirestoreService>(() => FirestoreServiceImpl(fakeClient));
 
   final features = <FeatureApp>[AuthFeature(), NotesFeature(), HomeFeature()];
@@ -55,9 +60,10 @@ Future<AppTestSetup> fakeBootstrap() async {
     await feature.initializeDependencies();
   }
 
-  final routes = features.fold<Map<String, FeatureRoute>>({}, (acc, feature) => acc..addAll(feature.routes));
+  final authNotifier = AuthStateNotifier(isAuthenticated: authenticated);
+  Locator.registerSingleton<AuthStateNotifier>(authNotifier);
 
-  return (routes: routes, fakeFirestore: fakeFirestore);
+  return (notifier: authNotifier, fakeFirestore: fakeFirestore);
 }
 
 extension FakeFirestoreNoteSeeder on FakeFirebaseFirestore {

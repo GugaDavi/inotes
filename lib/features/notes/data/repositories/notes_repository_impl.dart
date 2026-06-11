@@ -39,6 +39,18 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
+  Future<Result<NoteEntity>> getById({required String id}) async {
+    try {
+      final doc = await _service.get(collection: _collection, id: id);
+      return Success(NoteModel.fromMap(doc.id, doc.data));
+    } on DocumentNotFoundException {
+      return Failure(const NoteNotFoundFailure());
+    } on FirestoreOperationException catch (e) {
+      return Failure(NoteFirestoreFailure(e.message));
+    }
+  }
+
+  @override
   Future<Result<NoteEntity>> update({required String id, required String title, required String content}) async {
     try {
       final doc = await _service.update(collection: _collection, id: id, data: {'title': title, 'content': content});

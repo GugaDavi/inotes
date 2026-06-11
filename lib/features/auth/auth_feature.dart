@@ -6,7 +6,6 @@ import 'package:inotes/features/auth/domain/usecases/clear_session_use_case.dart
 import 'package:inotes/features/auth/domain/usecases/get_current_session_use_case.dart';
 import 'package:inotes/features/auth/domain/usecases/start_session_use_case.dart';
 import 'package:inotes/features/auth/presentation/cubit/auth_cubit.dart';
-import 'package:inotes/features/auth/presentation/pages/auth_page.dart';
 import 'package:inotes/services/local_storage/local_storage.dart';
 
 class AuthFeature implements FeatureApp {
@@ -20,9 +19,4 @@ class AuthFeature implements FeatureApp {
       () => AuthCubit(Locator.get<GetCurrentSessionUseCase>(), Locator.get<StartSessionUseCase>()),
     );
   }
-
-  @override
-  Map<String, FeatureRoute> get routes => {
-    '/auth': (settings) => FeatureApp.buildRoute(settings: settings, builder: (_) => const AuthPage()),
-  };
 }

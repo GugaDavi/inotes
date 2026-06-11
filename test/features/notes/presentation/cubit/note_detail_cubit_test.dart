@@ -9,6 +9,7 @@ import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/notes/domain/errors/note_failures.dart';
 import 'package:inotes/features/notes/domain/usecases/create_note_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/delete_note_use_case.dart';
+import 'package:inotes/features/notes/domain/usecases/get_note_by_id_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_cubit.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_state.dart';
@@ -21,11 +22,14 @@ class MockDeleteNoteUseCase extends Mock implements DeleteNoteUseCase {}
 
 class MockGetCurrentSessionUseCase extends Mock implements GetCurrentSessionUseCase {}
 
+class MockGetNoteByIdUseCase extends Mock implements GetNoteByIdUseCase {}
+
 void main() {
   late MockCreateNoteUseCase mockCreateNoteUseCase;
   late MockUpdateNoteUseCase mockUpdateNoteUseCase;
   late MockDeleteNoteUseCase mockDeleteNoteUseCase;
   late MockGetCurrentSessionUseCase mockGetSessionUseCase;
+  late MockGetNoteByIdUseCase mockGetNoteByIdUseCase;
 
   const tSession = SessionEntity(code: 'ABCD1234');
   final tNote = NoteEntity(
@@ -41,6 +45,7 @@ void main() {
     mockUpdateNoteUseCase = MockUpdateNoteUseCase();
     mockDeleteNoteUseCase = MockDeleteNoteUseCase();
     mockGetSessionUseCase = MockGetCurrentSessionUseCase();
+    mockGetNoteByIdUseCase = MockGetNoteByIdUseCase();
   });
 
   NoteDetailCubit buildCubit() => NoteDetailCubit(
@@ -48,6 +53,7 @@ void main() {
     mockUpdateNoteUseCase,
     mockDeleteNoteUseCase,
     mockGetSessionUseCase,
+    mockGetNoteByIdUseCase,
   );
 
   group('NoteDetailCubit', () {
@@ -79,8 +85,7 @@ void main() {
         'emits [Saving, Error] when no session exists',
         build: buildCubit,
         setUp: () {
-          when(() => mockGetSessionUseCase.execute())
-              .thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
+          when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
         },
         act: (cubit) => cubit.save(title: 'Test Note', content: 'Content'),
         expect: () => [isA<NoteDetailSaving>(), isA<NoteDetailError>()],
@@ -162,8 +167,7 @@ void main() {
         'emits [Deleting, Deleted] when delete succeeds',
         build: buildCubit,
         setUp: () {
-          when(() => mockDeleteNoteUseCase.execute(id: any(named: 'id')))
-              .thenAnswer((_) async => const Success(null));
+          when(() => mockDeleteNoteUseCase.execute(id: any(named: 'id'))).thenAnswer((_) async => const Success(null));
         },
         act: (cubit) => cubit.delete(id: '1'),
         expect: () => [isA<NoteDetailDeleting>(), isA<NoteDetailDeleted>()],
@@ -173,11 +177,48 @@ void main() {
         'emits [Deleting, Error] when delete fails',
         build: buildCubit,
         setUp: () {
-          when(() => mockDeleteNoteUseCase.execute(id: any(named: 'id')))
-              .thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
+          when(
+            () => mockDeleteNoteUseCase.execute(id: any(named: 'id')),
+          ).thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
         },
         act: (cubit) => cubit.delete(id: '1'),
         expect: () => [isA<NoteDetailDeleting>(), const NoteDetailError('Failed to delete note.')],
+      );
+    });
+
+    group('loadNote', () {
+      blocTest<NoteDetailCubit, NoteDetailState>(
+        'emits [FetchingNote, NoteReady] when note is found',
+        build: buildCubit,
+        setUp: () {
+          when(() => mockGetNoteByIdUseCase.execute(id: any(named: 'id'))).thenAnswer((_) async => Success(tNote));
+        },
+        act: (cubit) => cubit.loadNote(id: '1'),
+        expect: () => [isA<NoteDetailFetchingNote>(), NoteDetailNoteReady(tNote)],
+      );
+
+      blocTest<NoteDetailCubit, NoteDetailState>(
+        'emits [FetchingNote, Error] when note is not found',
+        build: buildCubit,
+        setUp: () {
+          when(
+            () => mockGetNoteByIdUseCase.execute(id: any(named: 'id')),
+          ).thenAnswer((_) async => const Failure(NoteNotFoundFailure()));
+        },
+        act: (cubit) => cubit.loadNote(id: 'missing'),
+        expect: () => [isA<NoteDetailFetchingNote>(), const NoteDetailError('Note not found.')],
+      );
+
+      blocTest<NoteDetailCubit, NoteDetailState>(
+        'emits [FetchingNote, Error] on firestore failure',
+        build: buildCubit,
+        setUp: () {
+          when(
+            () => mockGetNoteByIdUseCase.execute(id: any(named: 'id')),
+          ).thenAnswer((_) async => const Failure(NoteFirestoreFailure()));
+        },
+        act: (cubit) => cubit.loadNote(id: '1'),
+        expect: () => [isA<NoteDetailFetchingNote>(), const NoteDetailError('Failed to load note.')],
       );
     });
   });

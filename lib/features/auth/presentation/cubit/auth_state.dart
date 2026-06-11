@@ -4,21 +4,21 @@ sealed class AuthState extends Equatable {
   const AuthState();
 }
 
-class AuthInitial extends AuthState {
+final class AuthInitial extends AuthState {
   const AuthInitial();
 
   @override
   List<Object?> get props => [];
 }
 
-class AuthLoading extends AuthState {
+final class AuthLoading extends AuthState {
   const AuthLoading();
 
   @override
   List<Object?> get props => [];
 }
 
-class AuthSessionCreated extends AuthState {
+final class AuthSessionCreated extends AuthState {
   const AuthSessionCreated(this.code);
 
   final String code;
@@ -27,14 +27,14 @@ class AuthSessionCreated extends AuthState {
   List<Object?> get props => [code];
 }
 
-class AuthAuthenticated extends AuthState {
+final class AuthAuthenticated extends AuthState {
   const AuthAuthenticated();
 
   @override
   List<Object?> get props => [];
 }
 
-class AuthError extends AuthState {
+final class AuthError extends AuthState {
   const AuthError(this.message);
 
   final String message;

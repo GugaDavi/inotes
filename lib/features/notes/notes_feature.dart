@@ -5,10 +5,10 @@ import 'package:inotes/features/notes/data/repositories/notes_repository_impl.da
 import 'package:inotes/features/notes/domain/repositories/notes_repository.dart';
 import 'package:inotes/features/notes/domain/usecases/create_note_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/delete_note_use_case.dart';
+import 'package:inotes/features/notes/domain/usecases/get_note_by_id_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_cubit.dart';
-import 'package:inotes/features/notes/presentation/routes/note_detail_route.dart';
 import 'package:inotes/services/firestore/firestore_service.dart';
 
 class NotesFeature implements FeatureApp {
@@ -28,6 +28,7 @@ class NotesFeature implements FeatureApp {
     Locator.registerFactory<CreateNoteUseCase>(() => CreateNoteUseCase(Locator.get<NotesRepository>()));
     Locator.registerFactory<UpdateNoteUseCase>(() => UpdateNoteUseCase(Locator.get<NotesRepository>()));
     Locator.registerFactory<DeleteNoteUseCase>(() => DeleteNoteUseCase(Locator.get<NotesRepository>()));
+    Locator.registerFactory<GetNoteByIdUseCase>(() => GetNoteByIdUseCase(Locator.get<NotesRepository>()));
   }
 
   Future<void> _presentationLayer() async {
@@ -37,10 +38,8 @@ class NotesFeature implements FeatureApp {
         Locator.get<UpdateNoteUseCase>(),
         Locator.get<DeleteNoteUseCase>(),
         Locator.get<GetCurrentSessionUseCase>(),
+        Locator.get<GetNoteByIdUseCase>(),
       ),
     );
   }
-
-  @override
-  Map<String, FeatureRoute> get routes => {'/note': (settings) => NoteDetailRoute(settings)};
 }

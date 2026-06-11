@@ -47,8 +47,7 @@ void main() {
         'emits AuthInitial when no session exists',
         build: () => AuthCubit(mockGetSession, mockStartSession),
         setUp: () {
-          when(() => mockGetSession.execute())
-              .thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
+          when(() => mockGetSession.execute()).thenAnswer((_) async => const Failure(SessionNotFoundFailure()));
         },
         act: (cubit) => cubit.checkSession(),
         expect: () => [isA<AuthInitial>()],
@@ -60,8 +59,9 @@ void main() {
         'emits [AuthLoading, AuthAuthenticated] on success',
         build: () => AuthCubit(mockGetSession, mockStartSession),
         setUp: () {
-          when(() => mockStartSession.execute(code: any(named: 'code')))
-              .thenAnswer((_) async => const Success(tSession));
+          when(
+            () => mockStartSession.execute(code: any(named: 'code')),
+          ).thenAnswer((_) async => const Success(tSession));
         },
         act: (cubit) => cubit.enterCode('ABCD1234'),
         expect: () => [isA<AuthLoading>(), isA<AuthAuthenticated>()],
@@ -78,8 +78,9 @@ void main() {
         'emits [AuthLoading, AuthError] when repository fails',
         build: () => AuthCubit(mockGetSession, mockStartSession),
         setUp: () {
-          when(() => mockStartSession.execute(code: any(named: 'code')))
-              .thenAnswer((_) async => const Failure(SessionStorageFailure()));
+          when(
+            () => mockStartSession.execute(code: any(named: 'code')),
+          ).thenAnswer((_) async => const Failure(SessionStorageFailure()));
         },
         act: (cubit) => cubit.enterCode('ABCD1234'),
         expect: () => [isA<AuthLoading>(), isA<AuthError>()],
@@ -91,8 +92,7 @@ void main() {
         'emits [AuthLoading, AuthSessionCreated] with generated code',
         build: () => AuthCubit(mockGetSession, mockStartSession),
         setUp: () {
-          when(() => mockStartSession.execute(code: null))
-              .thenAnswer((_) async => const Success(tSession));
+          when(() => mockStartSession.execute(code: null)).thenAnswer((_) async => const Success(tSession));
         },
         act: (cubit) => cubit.startNewSession(),
         expect: () => [isA<AuthLoading>(), AuthSessionCreated(tSession.code)],
@@ -102,8 +102,9 @@ void main() {
         'emits [AuthLoading, AuthError] when generation fails',
         build: () => AuthCubit(mockGetSession, mockStartSession),
         setUp: () {
-          when(() => mockStartSession.execute(code: null))
-              .thenAnswer((_) async => const Failure(SessionStorageFailure()));
+          when(
+            () => mockStartSession.execute(code: null),
+          ).thenAnswer((_) async => const Failure(SessionStorageFailure()));
         },
         act: (cubit) => cubit.startNewSession(),
         expect: () => [isA<AuthLoading>(), isA<AuthError>()],
