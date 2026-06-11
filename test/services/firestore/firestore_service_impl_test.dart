@@ -40,6 +40,16 @@ void main() {
       final snapshot = await fakeFirestore.collection(collection).doc(result.id).get();
       expect(snapshot.exists, isTrue);
     });
+
+    test('stores DateTime as UTC Timestamp in Firestore', () async {
+      final localDate = DateTime(2026, 6, 10, 15, 0, 0);
+
+      final result = await service.add(collection: collection, data: {'createdAt': localDate});
+
+      final snapshot = await fakeFirestore.collection(collection).doc(result.id).get();
+      final stored = snapshot.data()!['createdAt'] as Timestamp;
+      expect(stored.seconds, localDate.toUtc().millisecondsSinceEpoch ~/ 1000);
+    });
   });
 
   group('getAll', () {
@@ -48,14 +58,16 @@ void main() {
       expect(result, isEmpty);
     });
 
-    test('converts Timestamps to DateTimes in returned data', () async {
-      final createdAt = DateTime(2026, 6, 10);
-      await fakeFirestore.collection(collection).add({'title': 'Title', 'createdAt': Timestamp.fromDate(createdAt)});
+    test('converts UTC Timestamps to local DateTimes in returned data', () async {
+      final utcDate = DateTime.utc(2026, 6, 10, 12, 0, 0);
+      await fakeFirestore.collection(collection).add({'title': 'Title', 'createdAt': Timestamp.fromDate(utcDate)});
 
       final result = await service.getAll(collection: collection);
 
-      expect(result.first.data['createdAt'], isA<DateTime>());
-      expect(result.first.data['createdAt'], createdAt);
+      final createdAt = result.first.data['createdAt'] as DateTime;
+      expect(createdAt, isA<DateTime>());
+      expect(createdAt.isUtc, isFalse);
+      expect(createdAt, utcDate.toLocal());
     });
 
     test('returns documents ordered by field descending', () async {

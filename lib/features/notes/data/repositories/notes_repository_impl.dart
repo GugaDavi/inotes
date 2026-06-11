@@ -29,13 +29,10 @@ class NotesRepositoryImpl implements NotesRepository {
   @override
   Future<Result<List<NoteEntity>>> getAll({required String userId}) async {
     try {
-      final docs = await _service.getAll(
-        collection: _collection,
-        orderBy: 'createdAt',
-        descending: true,
-        where: {'userId': userId},
-      );
-      return Success(docs.map((doc) => NoteModel.fromMap(doc.id, doc.data)).toList());
+      final docs = await _service.getAll(collection: _collection, where: {'userId': userId});
+      final notes = docs.map((doc) => NoteModel.fromMap(doc.id, doc.data) as NoteEntity).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return Success(notes);
     } on FirestoreOperationException catch (e) {
       return Failure(NoteFirestoreFailure(e.message));
     }
