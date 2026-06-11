@@ -22,6 +22,7 @@ void main() {
     const tId = '1';
     final tNote = NoteEntity(
       id: tId,
+      userId: 'user-a',
       title: 'Updated Title',
       content: 'Updated content',
       createdAt: DateTime(2026, 6, 9),

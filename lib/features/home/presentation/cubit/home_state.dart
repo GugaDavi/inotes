@@ -20,16 +20,24 @@ final class HomeLoading extends HomeState {
 }
 
 final class HomeLoaded extends HomeState {
-  const HomeLoaded(this.notes);
+  const HomeLoaded(this.notes, this.sessionCode);
 
   final List<NoteEntity> notes;
+  final String sessionCode;
 
   @override
-  List<Object?> get props => [notes];
+  List<Object?> get props => [notes, sessionCode];
 }
 
 final class HomeError extends HomeState {
   const HomeError();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class HomeLoggedOut extends HomeState {
+  const HomeLoggedOut();
 
   @override
   List<Object?> get props => [];

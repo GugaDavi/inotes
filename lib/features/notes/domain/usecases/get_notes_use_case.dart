@@ -7,7 +7,7 @@ class GetNotesUseCase {
 
   final NotesRepository _repository;
 
-  Future<Result<List<NoteEntity>>> execute() async {
-    return _repository.getAll();
+  Future<Result<List<NoteEntity>>> execute({required String userId}) async {
+    return _repository.getAll(userId: userId);
   }
 }

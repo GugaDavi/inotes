@@ -8,11 +8,11 @@ class CreateNoteUseCase {
 
   final NotesRepository _repository;
 
-  Future<Result<NoteEntity>> execute({required String title, required String content}) async {
+  Future<Result<NoteEntity>> execute({required String userId, required String title, required String content}) async {
     if (title.trim().isEmpty) {
       return Failure(const EmptyTitleFailure());
     }
 
-    return _repository.create(title: title, content: content);
+    return _repository.create(userId: userId, title: title, content: content);
   }
 }

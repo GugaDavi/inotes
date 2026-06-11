@@ -12,14 +12,14 @@ class FirestoreServiceImpl implements FirestoreService {
 
   Map<String, dynamic> _toFirestore(Map<String, dynamic> data) {
     return data.map((key, value) {
-      if (value is DateTime) return MapEntry(key, Timestamp.fromDate(value));
+      if (value is DateTime) return MapEntry(key, Timestamp.fromDate(value.toUtc()));
       return MapEntry(key, value);
     });
   }
 
   Map<String, dynamic> _fromFirestore(Map<String, dynamic> data) {
     return data.map((key, value) {
-      if (value is Timestamp) return MapEntry(key, value.toDate());
+      if (value is Timestamp) return MapEntry(key, value.toDate().toLocal());
       return MapEntry(key, value);
     });
   }
@@ -36,9 +36,19 @@ class FirestoreServiceImpl implements FirestoreService {
   }
 
   @override
-  Future<List<FirestoreDocument>> getAll({required String collection, String? orderBy, bool descending = false}) async {
+  Future<List<FirestoreDocument>> getAll({
+    required String collection,
+    String? orderBy,
+    bool descending = false,
+    Map<String, Object?>? where,
+  }) async {
     try {
       Query<Map<String, dynamic>> query = _collection(collection);
+      if (where != null) {
+        for (final entry in where.entries) {
+          query = query.where(entry.key, isEqualTo: entry.value);
+        }
+      }
       if (orderBy != null) {
         query = query.orderBy(orderBy, descending: descending);
       }

@@ -14,11 +14,11 @@ class NotesRepositoryImpl implements NotesRepository {
   static const _collection = 'notes';
 
   @override
-  Future<Result<NoteEntity>> create({required String title, required String content}) async {
+  Future<Result<NoteEntity>> create({required String userId, required String title, required String content}) async {
     try {
       final doc = await _service.add(
         collection: _collection,
-        data: {'title': title, 'content': content, 'createdAt': DateTime.now()},
+        data: {'userId': userId, 'title': title, 'content': content, 'createdAt': DateTime.now()},
       );
       return Success(NoteModel.fromMap(doc.id, doc.data));
     } on FirestoreOperationException catch (e) {
@@ -27,10 +27,12 @@ class NotesRepositoryImpl implements NotesRepository {
   }
 
   @override
-  Future<Result<List<NoteEntity>>> getAll() async {
+  Future<Result<List<NoteEntity>>> getAll({required String userId}) async {
     try {
-      final docs = await _service.getAll(collection: _collection, orderBy: 'createdAt', descending: true);
-      return Success(docs.map((doc) => NoteModel.fromMap(doc.id, doc.data)).toList());
+      final docs = await _service.getAll(collection: _collection, where: {'userId': userId});
+      final notes = docs.map((doc) => NoteModel.fromMap(doc.id, doc.data) as NoteEntity).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return Success(notes);
     } on FirestoreOperationException catch (e) {
       return Failure(NoteFirestoreFailure(e.message));
     }

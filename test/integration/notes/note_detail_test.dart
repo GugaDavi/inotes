@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inotes/core/app.dart';
@@ -67,11 +66,11 @@ void main() {
 
     setUp(() async {
       setup = await fakeBootstrap();
-      await setup.fakeFirestore.collection('notes').add({
-        'title': 'Original Title',
-        'content': 'Original Content',
-        'createdAt': Timestamp.fromDate(DateTime(2026, 6, 10)),
-      });
+      await setup.fakeFirestore.seedNote(
+        title: 'Original Title',
+        content: 'Original Content',
+        createdAt: DateTime(2026, 6, 10),
+      );
     });
 
     testWidgets('opens pre-filled edit form with Edit Note title', (tester) async {
@@ -109,11 +108,11 @@ void main() {
 
     setUp(() async {
       setup = await fakeBootstrap();
-      await setup.fakeFirestore.collection('notes').add({
-        'title': 'Note to Delete',
-        'content': 'Will be removed',
-        'createdAt': Timestamp.fromDate(DateTime(2026, 6, 10)),
-      });
+      await setup.fakeFirestore.seedNote(
+        title: 'Note to Delete',
+        content: 'Will be removed',
+        createdAt: DateTime(2026, 6, 10),
+      );
     });
 
     testWidgets('shows confirmation dialog on delete tap', (tester) async {
