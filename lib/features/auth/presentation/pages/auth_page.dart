@@ -4,7 +4,7 @@ import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:inotes/features/auth/presentation/cubit/auth_state.dart';
-import 'package:inotes/features/shared/widgets/copy_button.dart';
+import 'package:inotes/features/shared/widgets/buttons/copy_button.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});

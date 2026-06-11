@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:inotes/features/shared/widgets/copy_button.dart';
+import 'package:inotes/features/shared/widgets/buttons/copy_button.dart';
 
 void main() {
   setUp(() {

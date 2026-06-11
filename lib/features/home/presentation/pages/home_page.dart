@@ -7,7 +7,7 @@ import 'package:inotes/features/home/presentation/cubit/home_state.dart';
 import 'package:inotes/features/home/presentation/widgets/note_list_tile.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/shared/widgets/buttons/primary_button.dart';
-import 'package:inotes/features/shared/widgets/copy_button.dart';
+import 'package:inotes/features/shared/widgets/buttons/copy_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
