@@ -19,6 +19,7 @@ Future<AppBootstrap> bootstrap() async {
 
   final firebase = FirebaseClientImpl(env);
   await firebase.initialize();
+  await firebase.signInAnonymously();
 
   final prefs = await SharedPreferences.getInstance();
   ServicesDI.initialize(firebase: firebase, prefs: prefs);

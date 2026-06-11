@@ -24,6 +24,9 @@ class _FakeFirebaseClient implements FirebaseClient {
   Future<void> initialize() async {}
 
   @override
+  Future<void> signInAnonymously() async {}
+
+  @override
   FirebaseFirestore get firestore => _firestore;
 }
 
@@ -59,11 +62,8 @@ Future<AppTestSetup> fakeBootstrap() async {
 
 extension FakeFirestoreNoteSeeder on FakeFirebaseFirestore {
   Future<void> seedNote({required String title, required String content, required DateTime createdAt}) {
-    return collection('notes').add({
-      'userId': testSessionCode,
-      'title': title,
-      'content': content,
-      'createdAt': Timestamp.fromDate(createdAt),
-    });
+    return collection(
+      'notes',
+    ).add({'userId': testSessionCode, 'title': title, 'content': content, 'createdAt': Timestamp.fromDate(createdAt)});
   }
 }

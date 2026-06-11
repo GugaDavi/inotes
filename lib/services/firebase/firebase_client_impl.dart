@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:inotes/core/env/env_loader.dart';
 import 'package:inotes/services/firebase/firebase_client.dart';
@@ -21,6 +22,13 @@ class FirebaseClientImpl implements FirebaseClient {
         measurementId: _envLoader.get('FIREBASE_MEASUREMENT_ID'),
       ),
     );
+  }
+
+  @override
+  Future<void> signInAnonymously() async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      await FirebaseAuth.instance.signInAnonymously();
+    }
   }
 
   @override
