@@ -66,17 +66,20 @@ Feature-based clean architecture. See [CLAUDE.md](CLAUDE.md) for the full archit
 ```
 lib/
   core/
-    ui/           # AppColors, AppSpacing design tokens
-    errors/       # AppFailure base class
-    result/       # Result<T> sealed class (Success, Failure)
+    contracts/    # FeatureApp abstract class
     di/           # Service locator
     env/          # Environment / .env loading
+    errors/       # AppFailure base class
+    result/       # Result<T> sealed class (Success, Failure)
+    router/       # AppRouter (all route declarations) + AuthStateNotifier
+    ui/           # AppColors, AppSpacing design tokens
   features/
     auth/         # Session-code auth (start, restore, clear session)
     notes/        # Notes CRUD
     home/         # Notes list with search
     shared/
       widgets/    # Reusable UI components (PrimaryButton, CopyButton, …)
+    splash/       # Lottie splash screen shown before bootstrap
   services/
     firebase/     # FirebaseClient — init + anonymous sign-in
     firestore/    # Firestore service abstraction
