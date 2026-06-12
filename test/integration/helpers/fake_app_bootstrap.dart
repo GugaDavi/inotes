@@ -8,6 +8,7 @@ import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/features/auth/auth_feature.dart';
 import 'package:inotes/features/home/home_feature.dart';
 import 'package:inotes/features/notes/notes_feature.dart';
+import 'package:inotes/features/tags/tags_feature.dart';
 import 'package:inotes/services/firebase/firebase_client.dart';
 import 'package:inotes/services/firestore/firestore_service.dart';
 import 'package:inotes/services/firestore/firestore_service_impl.dart';
@@ -56,7 +57,7 @@ Future<AppTestSetup> fakeBootstrap({bool authenticated = true}) async {
   Locator.registerSingleton<LocalStorage>(_FakeLocalStorage(sessionCode: authenticated ? testSessionCode : null));
   Locator.registerFactory<FirestoreService>(() => FirestoreServiceImpl(fakeClient));
 
-  final features = <FeatureApp>[AuthFeature(), NotesFeature(), HomeFeature()];
+  final features = <FeatureApp>[AuthFeature(), TagsFeature(), NotesFeature(), HomeFeature()];
   for (final feature in features) {
     await feature.initializeDependencies();
   }
