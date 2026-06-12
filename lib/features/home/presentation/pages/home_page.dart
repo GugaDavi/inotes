@@ -6,6 +6,7 @@ import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/home/presentation/cubit/home_cubit.dart';
 import 'package:inotes/features/home/presentation/cubit/home_state.dart';
+import 'package:inotes/features/home/presentation/widgets/date_filter_bar.dart';
 import 'package:inotes/features/home/presentation/widgets/note_list_tile.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/shared/widgets/buttons/copy_button.dart';
@@ -137,8 +138,19 @@ class _HomePageState extends State<HomePage> {
                         ),
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.lg,
+                              AppSpacing.lg,
+                              AppSpacing.lg,
+                              AppSpacing.sm,
+                            ),
                             child: CupertinoSearchTextField(onChanged: (q) => _cubit.search(q)),
+                          ),
+                        ),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 14.0, bottom: 12),
+                            child: DateFilterBar(cubit: _cubit),
                           ),
                         ),
                         switch (state) {

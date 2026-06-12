@@ -11,6 +11,7 @@ import 'package:inotes/features/home/presentation/cubit/home_state.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/notes/domain/errors/note_failures.dart';
 import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
+import 'package:inotes/features/shared/filter/date_range_filter.dart';
 
 class MockGetNotesUseCase extends Mock implements GetNotesUseCase {}
 
@@ -230,6 +231,109 @@ void main() {
         build: buildCubit,
         seed: () => const HomeLoading(),
         act: (cubit) => cubit.search('anything'),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [],
+      );
+    });
+
+    group('applyDateFilter', () {
+      final noteDay10 = NoteEntity(
+        id: '10',
+        userId: tSession.code,
+        title: 'Day ten',
+        content: 'content',
+        createdAt: DateTime(2026, 6, 10),
+      );
+      final noteDay11 = NoteEntity(
+        id: '11',
+        userId: tSession.code,
+        title: 'Day eleven',
+        content: 'content',
+        createdAt: DateTime(2026, 6, 11),
+      );
+      final noteDay12 = NoteEntity(
+        id: '12',
+        userId: tSession.code,
+        title: 'Day twelve',
+        content: 'content',
+        createdAt: DateTime(2026, 6, 12),
+      );
+      final allNotes = [noteDay10, noteDay11, noteDay12];
+      final tLoaded = HomeLoaded(notes: allNotes, filteredNotes: allNotes, sessionCode: tSession.code);
+
+      blocTest<HomeCubit, HomeState>(
+        'filters to a single day',
+        build: buildCubit,
+        seed: () => tLoaded,
+        act: (cubit) => cubit.applyDateFilter(DateRangeFilter(from: DateTime(2026, 6, 11))),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [
+          HomeLoaded(
+            notes: allNotes,
+            filteredNotes: [noteDay11],
+            sessionCode: tSession.code,
+            dateFilter: DateRangeFilter(from: DateTime(2026, 6, 11)),
+          ),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'filters by date range (inclusive boundaries)',
+        build: buildCubit,
+        seed: () => tLoaded,
+        act: (cubit) => cubit.applyDateFilter(DateRangeFilter(from: DateTime(2026, 6, 10), to: DateTime(2026, 6, 11))),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [
+          HomeLoaded(
+            notes: allNotes,
+            filteredNotes: [noteDay10, noteDay11],
+            sessionCode: tSession.code,
+            dateFilter: DateRangeFilter(from: DateTime(2026, 6, 10), to: DateTime(2026, 6, 11)),
+          ),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'clears filter and returns all notes when null is passed',
+        build: buildCubit,
+        seed: () => HomeLoaded(
+          notes: allNotes,
+          filteredNotes: [noteDay11],
+          sessionCode: tSession.code,
+          dateFilter: DateRangeFilter(from: DateTime(2026, 6, 11)),
+        ),
+        act: (cubit) => cubit.applyDateFilter(null),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [HomeLoaded(notes: allNotes, filteredNotes: allNotes, sessionCode: tSession.code)],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'combined: text search and date filter intersect',
+        build: buildCubit,
+        seed: () => HomeLoaded(
+          notes: [tNote, tNote2],
+          filteredNotes: [tNote, tNote2],
+          sessionCode: tSession.code,
+          query: 'note',
+        ),
+        act: (cubit) => cubit.applyDateFilter(DateRangeFilter(from: DateTime(2026, 6, 10))),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [
+          HomeLoaded(
+            notes: [tNote, tNote2],
+            filteredNotes: [tNote],
+            sessionCode: tSession.code,
+            query: 'note',
+            dateFilter: DateRangeFilter(from: DateTime(2026, 6, 10)),
+          ),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'does nothing when state is not HomeLoaded',
+        build: buildCubit,
+        seed: () => const HomeLoading(),
+        act: (cubit) => cubit.applyDateFilter(DateRangeFilter(from: DateTime(2026, 6, 10))),
         wait: const Duration(milliseconds: 400),
         expect: () => [],
       );
