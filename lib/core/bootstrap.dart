@@ -9,6 +9,7 @@ import 'package:inotes/features/auth/auth_feature.dart';
 import 'package:inotes/features/auth/domain/repositories/session_repository.dart';
 import 'package:inotes/features/home/home_feature.dart';
 import 'package:inotes/features/notes/notes_feature.dart';
+import 'package:inotes/features/tags/tags_feature.dart';
 import 'package:inotes/services/firebase/firebase_client_impl.dart';
 import 'package:inotes/services/services_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,7 +27,7 @@ Future<AppBootstrap> bootstrap() async {
   final prefs = await SharedPreferences.getInstance();
   ServicesDI.initialize(firebase: firebase, prefs: prefs);
 
-  final features = <FeatureApp>[AuthFeature(), NotesFeature(), HomeFeature()];
+  final features = <FeatureApp>[AuthFeature(), TagsFeature(), NotesFeature(), HomeFeature()];
   for (final feature in features) {
     await feature.initializeDependencies();
   }

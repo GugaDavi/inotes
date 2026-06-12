@@ -14,4 +14,8 @@ final class Locator {
   static void registerSingleton<T extends Object>(T instance) {
     _container.registerSingleton<T>(instance);
   }
+
+  static void registerLazySingleton<T extends Object>(T Function() factory) {
+    _container.registerLazySingleton<T>(factory);
+  }
 }

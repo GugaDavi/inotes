@@ -4,6 +4,7 @@ import 'package:inotes/core/result/result.dart';
 import 'package:inotes/features/notes/data/models/note_model.dart';
 import 'package:inotes/features/notes/data/repositories/notes_repository_impl.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
+import 'package:inotes/features/notes/domain/entities/note_tag_entity.dart';
 import 'package:inotes/features/notes/domain/errors/note_failures.dart';
 import 'package:inotes/services/firestore/exceptions/firestore_exceptions.dart';
 import 'package:inotes/services/firestore/firestore_service.dart';
@@ -20,7 +21,13 @@ void main() {
   });
 
   final tCreatedAt = DateTime(2026, 6, 10);
-  final tData = {'userId': 'user-a', 'title': 'Title', 'content': 'Content', 'createdAt': tCreatedAt};
+  final tData = {
+    'userId': 'user-a',
+    'title': 'Title',
+    'content': 'Content',
+    'createdAt': tCreatedAt,
+    'tags': <dynamic>[],
+  };
   final tDocument = (id: '1', data: tData);
   final tNote = NoteModel(id: '1', userId: 'user-a', title: 'Title', content: 'Content', createdAt: tCreatedAt);
 
@@ -39,7 +46,7 @@ void main() {
       expect((result as Success<NoteEntity>).value, tNote);
     });
 
-    test('includes userId in stored data', () async {
+    test('includes userId and empty tags in stored data', () async {
       Map<String, dynamic>? capturedData;
       when(
         () => mockService.add(
@@ -54,6 +61,27 @@ void main() {
       await repository.create(userId: 'user-a', title: 'Title', content: 'Content');
 
       expect(capturedData!['userId'], 'user-a');
+      expect(capturedData!['tags'], isEmpty);
+    });
+
+    test('includes serialized tags in stored data', () async {
+      const tTag = NoteTagEntity(id: 'tag1', label: 'Work', color: 0xFF007AFF);
+      Map<String, dynamic>? capturedData;
+      when(
+        () => mockService.add(
+          collection: any(named: 'collection'),
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer((inv) async {
+        capturedData = inv.namedArguments[const Symbol('data')] as Map<String, dynamic>;
+        return tDocument;
+      });
+
+      await repository.create(userId: 'user-a', title: 'Title', content: 'Content', tags: [tTag]);
+
+      expect(capturedData!['tags'], [
+        {'id': 'tag1', 'label': 'Work', 'color': 0xFF007AFF},
+      ]);
     });
 
     test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
@@ -101,8 +129,8 @@ void main() {
     });
 
     test('returns notes sorted by createdAt descending', () async {
-      final older = {'userId': 'user-a', 'title': 'Old', 'content': '', 'createdAt': DateTime(2026, 1, 1)};
-      final newer = {'userId': 'user-a', 'title': 'New', 'content': '', 'createdAt': DateTime(2026, 6, 1)};
+      final older = {'userId': 'user-a', 'title': 'Old', 'content': '', 'createdAt': DateTime(2026, 1, 1), 'tags': []};
+      final newer = {'userId': 'user-a', 'title': 'New', 'content': '', 'createdAt': DateTime(2026, 6, 1), 'tags': []};
       when(
         () => mockService.getAll(
           collection: any(named: 'collection'),
@@ -163,6 +191,27 @@ void main() {
 
       expect(result, isA<Success<NoteEntity>>());
       expect((result as Success<NoteEntity>).value, tNote);
+    });
+
+    test('includes serialized tags in update data', () async {
+      const tTag = NoteTagEntity(id: 'tag1', label: 'Work', color: 0xFF007AFF);
+      Map<String, dynamic>? capturedData;
+      when(
+        () => mockService.update(
+          collection: any(named: 'collection'),
+          id: any(named: 'id'),
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer((inv) async {
+        capturedData = inv.namedArguments[const Symbol('data')] as Map<String, dynamic>;
+        return tDocument;
+      });
+
+      await repository.update(id: '1', title: 'Title', content: 'Content', tags: [tTag]);
+
+      expect(capturedData!['tags'], [
+        {'id': 'tag1', 'label': 'Work', 'color': 0xFF007AFF},
+      ]);
     });
 
     test('returns Failure(NoteNotFoundFailure) on DocumentNotFoundException', () async {

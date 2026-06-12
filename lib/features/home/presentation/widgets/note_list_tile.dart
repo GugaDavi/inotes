@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
+import 'package:inotes/features/home/presentation/widgets/note_tag_row.dart';
 import 'package:inotes/features/shared/formatters/date_formatter.dart';
 
 class NoteListTile extends StatefulWidget {
@@ -70,6 +71,10 @@ class _NoteListTileState extends State<NoteListTile> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (widget.note.tags.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    NoteTagRow(tags: widget.note.tags),
+                  ],
                 ],
               ),
             ),

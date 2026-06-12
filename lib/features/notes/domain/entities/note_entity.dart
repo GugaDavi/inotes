@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:inotes/features/notes/domain/entities/note_tag_entity.dart';
 
 class NoteEntity extends Equatable {
   const NoteEntity({
@@ -7,6 +8,7 @@ class NoteEntity extends Equatable {
     required this.title,
     required this.content,
     required this.createdAt,
+    this.tags = const [],
   });
 
   final String id;
@@ -14,7 +16,8 @@ class NoteEntity extends Equatable {
   final String title;
   final String content;
   final DateTime createdAt;
+  final List<NoteTagEntity> tags;
 
   @override
-  List<Object?> get props => [id, userId, title, content, createdAt];
+  List<Object?> get props => [id, userId, title, content, createdAt, tags];
 }

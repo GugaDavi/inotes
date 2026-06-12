@@ -8,6 +8,7 @@ import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_cubit.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_state.dart';
+import 'package:inotes/features/notes/presentation/widgets/tag_picker.dart';
 
 class NoteDetailPage extends StatefulWidget {
   const NoteDetailPage({super.key, this.note});
@@ -31,6 +32,7 @@ class _NoteDetailPageState extends State<NoteDetailPage> {
     _cubit = Locator.get<NoteDetailCubit>();
     _titleController = TextEditingController(text: widget.note?.title ?? '');
     _contentController = TextEditingController(text: widget.note?.content ?? '');
+    _cubit.loadTags(initialTags: widget.note?.tags ?? []);
   }
 
   @override
@@ -186,6 +188,8 @@ class _NoteDetailCard extends StatelessWidget {
                   placeholderStyle: const TextStyle(fontSize: 15, color: CupertinoColors.placeholderText),
                   decoration: null,
                 ),
+                const SizedBox(height: AppSpacing.md),
+                TagPicker(cubit: cubit),
               ],
             ),
           ),

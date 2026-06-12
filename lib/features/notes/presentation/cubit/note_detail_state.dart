@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
+import 'package:inotes/features/tags/domain/entities/tag_entity.dart';
 
 sealed class NoteDetailState extends Equatable {
   const NoteDetailState();
@@ -10,6 +11,16 @@ final class NoteDetailInitial extends NoteDetailState {
 
   @override
   List<Object?> get props => [];
+}
+
+final class NoteDetailTagsLoaded extends NoteDetailState {
+  const NoteDetailTagsLoaded({required this.availableTags, required this.selectedTagIds});
+
+  final List<TagEntity> availableTags;
+  final List<String> selectedTagIds;
+
+  @override
+  List<Object?> get props => [availableTags, selectedTagIds];
 }
 
 final class NoteDetailSaving extends NoteDetailState {

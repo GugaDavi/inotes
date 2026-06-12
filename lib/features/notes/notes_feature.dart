@@ -12,6 +12,7 @@ import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_cubit.dart';
 import 'package:inotes/features/notes/presentation/pages/note_detail_page.dart';
+import 'package:inotes/features/tags/domain/usecases/get_tags_use_case.dart';
 import 'package:inotes/services/firestore/firestore_service.dart';
 
 class NotesFeature implements FeatureApp {
@@ -40,6 +41,7 @@ class NotesFeature implements FeatureApp {
         Locator.get<UpdateNoteUseCase>(),
         Locator.get<DeleteNoteUseCase>(),
         Locator.get<GetCurrentSessionUseCase>(),
+        Locator.get<GetTagsUseCase>(),
       ),
     );
   }
