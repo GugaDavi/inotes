@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inotes/core/contracts/feature_app.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/router/auth_state_notifier.dart';
@@ -14,7 +15,7 @@ import 'package:inotes/services/local_storage/local_storage.dart';
 
 const testSessionCode = 'TEST0001';
 
-typedef AppTestSetup = ({AuthStateNotifier notifier, FakeFirebaseFirestore fakeFirestore});
+typedef AppTestSetup = ({AuthStateNotifier notifier, List<RouteBase> routes, FakeFirebaseFirestore fakeFirestore});
 
 class _FakeFirebaseClient implements FirebaseClient {
   _FakeFirebaseClient(this._firestore);
@@ -63,7 +64,9 @@ Future<AppTestSetup> fakeBootstrap({bool authenticated = true}) async {
   final authNotifier = AuthStateNotifier(isAuthenticated: authenticated);
   Locator.registerSingleton<AuthStateNotifier>(authNotifier);
 
-  return (notifier: authNotifier, fakeFirestore: fakeFirestore);
+  final routes = [for (final feature in features) ...feature.routes];
+
+  return (notifier: authNotifier, routes: routes, fakeFirestore: fakeFirestore);
 }
 
 extension FakeFirestoreNoteSeeder on FakeFirebaseFirestore {

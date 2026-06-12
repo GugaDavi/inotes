@@ -34,8 +34,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openNote([NoteEntity? note]) {
-    final path = note == null ? '/notes/new' : '/notes/${note.id}';
-    context.push(path, extra: note).then((result) {
+    context.push('/note', extra: note).then((result) {
       if (result == true) _cubit.loadNotes();
     });
   }

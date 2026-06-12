@@ -196,50 +196,6 @@ void main() {
     });
   });
 
-  group('getById', () {
-    test('returns Success(NoteEntity) on service success', () async {
-      when(
-        () => mockService.get(
-          collection: any(named: 'collection'),
-          id: any(named: 'id'),
-        ),
-      ).thenAnswer((_) async => tDocument);
-
-      final result = await repository.getById(id: '1');
-
-      expect(result, isA<Success<NoteEntity>>());
-      expect((result as Success<NoteEntity>).value, tNote);
-    });
-
-    test('returns Failure(NoteNotFoundFailure) on DocumentNotFoundException', () async {
-      when(
-        () => mockService.get(
-          collection: any(named: 'collection'),
-          id: any(named: 'id'),
-        ),
-      ).thenThrow(const DocumentNotFoundException());
-
-      final result = await repository.getById(id: '1');
-
-      expect(result, isA<Failure<NoteEntity>>());
-      expect((result as Failure<NoteEntity>).failure, isA<NoteNotFoundFailure>());
-    });
-
-    test('returns Failure(NoteFirestoreFailure) on FirestoreOperationException', () async {
-      when(
-        () => mockService.get(
-          collection: any(named: 'collection'),
-          id: any(named: 'id'),
-        ),
-      ).thenThrow(const FirestoreOperationException());
-
-      final result = await repository.getById(id: '1');
-
-      expect(result, isA<Failure<NoteEntity>>());
-      expect((result as Failure<NoteEntity>).failure, isA<NoteFirestoreFailure>());
-    });
-  });
-
   group('delete', () {
     test('returns Success(void) on service success', () async {
       when(

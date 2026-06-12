@@ -12,7 +12,7 @@ Future<void> main() async {
 
   runApp(const SplashApp());
 
-  final authNotifier = await bootstrap();
+  final (:notifier, :routes) = await bootstrap();
 
-  runApp(App(authNotifier: authNotifier));
+  runApp(App(authNotifier: notifier, routes: routes));
 }

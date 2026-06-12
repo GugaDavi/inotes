@@ -13,28 +13,28 @@ void main() {
     });
 
     testWidgets('shows app title', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.text('iNotes'), findsOneWidget);
     });
 
     testWidgets('shows new note button', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.text('New Note'), findsOneWidget);
     });
 
     testWidgets('shows search field', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.byType(CupertinoSearchTextField), findsOneWidget);
     });
 
     testWidgets('shows empty state when there are no notes', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.text('No Notes Yet'), findsOneWidget);
@@ -42,7 +42,7 @@ void main() {
     });
 
     testWidgets('shows 0 Notes in bottom bar', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.text('0 Notes'), findsOneWidget);
@@ -67,7 +67,7 @@ void main() {
     });
 
     testWidgets('shows note titles in list', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.text('Shopping List'), findsOneWidget);
@@ -75,7 +75,7 @@ void main() {
     });
 
     testWidgets('shows note content preview in list', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.text('Milk, eggs, bread'), findsOneWidget);
@@ -83,14 +83,14 @@ void main() {
     });
 
     testWidgets('shows correct note count in bottom bar', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.text('2 Notes'), findsOneWidget);
     });
 
     testWidgets('does not show empty state', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       expect(find.text('No Notes Yet'), findsNothing);

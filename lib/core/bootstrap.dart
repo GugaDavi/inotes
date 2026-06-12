@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inotes/core/contracts/feature_app.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/env/dotenv_loader.dart';
@@ -12,7 +13,9 @@ import 'package:inotes/services/firebase/firebase_client_impl.dart';
 import 'package:inotes/services/services_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<AuthStateNotifier> bootstrap() async {
+typedef AppBootstrap = ({AuthStateNotifier notifier, List<RouteBase> routes});
+
+Future<AppBootstrap> bootstrap() async {
   final env = DotenvLoader(dotenv);
   await env.load();
 
@@ -34,5 +37,7 @@ Future<AuthStateNotifier> bootstrap() async {
   final authNotifier = AuthStateNotifier(isAuthenticated: isAuthenticated);
   Locator.registerSingleton<AuthStateNotifier>(authNotifier);
 
-  return authNotifier;
+  final routes = [for (final feature in features) ...feature.routes];
+
+  return (notifier: authNotifier, routes: routes);
 }
