@@ -1,28 +1,62 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inotes/core/ui/ui.dart';
 import 'package:inotes/features/home/presentation/cubit/home_cubit.dart';
 import 'package:inotes/features/home/presentation/cubit/home_state.dart';
 import 'package:inotes/features/shared/filter/date_range_filter.dart';
 
-class DateFilterBar extends StatelessWidget {
+class DateFilterBar extends StatefulWidget {
   const DateFilterBar({super.key, required this.cubit});
 
   final HomeCubit cubit;
 
-  void _openPicker(BuildContext context, DateRangeFilter? current) {
-    showCupertinoModalPopup<DateRangeFilter?>(
-      context: context,
-      builder: (_) => _DateFilterPicker(initial: current),
-    ).then((result) {
-      if (result != null) cubit.applyDateFilter(result);
-    });
+  @override
+  State<DateFilterBar> createState() => _DateFilterBarState();
+}
+
+class _DateFilterBarState extends State<DateFilterBar> {
+  final _layerLink = LayerLink();
+  OverlayEntry? _entry;
+
+  void _toggle(DateRangeFilter? current) {
+    if (_entry != null) {
+      _close();
+      return;
+    }
+    _open(current);
+  }
+
+  void _open(DateRangeFilter? current) {
+    _entry = OverlayEntry(
+      builder: (_) => _DropdownOverlay(
+        layerLink: _layerLink,
+        initial: current,
+        onApply: (filter) {
+          widget.cubit.applyDateFilter(filter);
+          _close();
+        },
+        onDismiss: _close,
+      ),
+    );
+    Overlay.of(context).insert(_entry!);
+  }
+
+  void _close() {
+    _entry?.remove();
+    _entry = null;
+  }
+
+  @override
+  void dispose() {
+    _close();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
-      bloc: cubit,
+      bloc: widget.cubit,
       builder: (context, state) {
         if (state is! HomeLoaded || state.notes.isEmpty) return const SizedBox.shrink();
 
@@ -33,42 +67,45 @@ class DateFilterBar extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
           child: Row(
             children: [
-              MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => _openPicker(context, dateFilter),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isActive ? CupertinoColors.activeBlue : CupertinoColors.systemBackground,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-                      boxShadow: const [BoxShadow(color: AppColors.shadow, blurRadius: 8, offset: Offset(0, 2))],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          CupertinoIcons.calendar,
-                          size: 14,
-                          color: isActive ? CupertinoColors.white : CupertinoColors.secondaryLabel,
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Date',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+              CompositedTransformTarget(
+                link: _layerLink,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () => _toggle(dateFilter),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isActive ? CupertinoColors.activeBlue : CupertinoColors.systemBackground,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
+                        boxShadow: const [BoxShadow(color: AppColors.shadow, blurRadius: 8, offset: Offset(0, 2))],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            CupertinoIcons.calendar,
+                            size: 16,
                             color: isActive ? CupertinoColors.white : CupertinoColors.secondaryLabel,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 5),
+                          Text(
+                            'Date',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: isActive ? CupertinoColors.white : CupertinoColors.secondaryLabel,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
               if (isActive) ...[
                 const SizedBox(width: AppSpacing.sm),
-                _ActiveFilterChip(filter: dateFilter, onClear: () => cubit.applyDateFilter(null)),
+                _ActiveFilterChip(filter: dateFilter, onClear: () => widget.cubit.applyDateFilter(null)),
               ],
             ],
           ),
@@ -77,6 +114,8 @@ class DateFilterBar extends StatelessWidget {
     );
   }
 }
+
+// ── Active filter chip ────────────────────────────────────────────────────────
 
 class _ActiveFilterChip extends StatelessWidget {
   const _ActiveFilterChip({required this.filter, required this.onClear});
@@ -95,7 +134,7 @@ class _ActiveFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: CupertinoColors.activeBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
@@ -104,11 +143,14 @@ class _ActiveFilterChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_label(), style: const TextStyle(fontSize: 12, color: CupertinoColors.activeBlue)),
+          Text(_label(), style: const TextStyle(fontSize: 14, color: CupertinoColors.activeBlue)),
           const SizedBox(width: 4),
-          GestureDetector(
-            onTap: onClear,
-            child: const Icon(CupertinoIcons.xmark_circle_fill, size: 14, color: CupertinoColors.activeBlue),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: onClear,
+              child: const Icon(CupertinoIcons.xmark_circle_fill, size: 14, color: CupertinoColors.activeBlue),
+            ),
           ),
         ],
       ),
@@ -116,119 +158,240 @@ class _ActiveFilterChip extends StatelessWidget {
   }
 }
 
-class _DateFilterPicker extends StatefulWidget {
-  const _DateFilterPicker({this.initial});
+// ── Dropdown overlay ──────────────────────────────────────────────────────────
 
+class _DropdownOverlay extends StatefulWidget {
+  const _DropdownOverlay({
+    required this.layerLink,
+    required this.initial,
+    required this.onApply,
+    required this.onDismiss,
+  });
+
+  final LayerLink layerLink;
   final DateRangeFilter? initial;
+  final void Function(DateRangeFilter?) onApply;
+  final VoidCallback onDismiss;
 
   @override
-  State<_DateFilterPicker> createState() => _DateFilterPickerState();
+  State<_DropdownOverlay> createState() => _DropdownOverlayState();
 }
 
-class _DateFilterPickerState extends State<_DateFilterPicker> {
-  late DateTime _from;
-  late DateTime _to;
+class _DropdownOverlayState extends State<_DropdownOverlay> {
+  late final TextEditingController _fromCtrl;
+  late final TextEditingController _toCtrl;
   bool _hasRange = false;
+  String? _fromError;
+  String? _toError;
+
+  static String _fmtInitial(DateTime d) =>
+      '${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}/${d.year}';
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _from = widget.initial?.from ?? now;
-    _to = widget.initial?.to ?? _from;
+    _fromCtrl = TextEditingController(text: widget.initial != null ? _fmtInitial(widget.initial!.from) : '');
+    _toCtrl = TextEditingController(text: widget.initial?.to != null ? _fmtInitial(widget.initial!.to!) : '');
     _hasRange = widget.initial?.to != null;
   }
 
-  void _apply() => Navigator.of(context).pop(DateRangeFilter(from: _from, to: _hasRange ? _to : null));
+  @override
+  void dispose() {
+    _fromCtrl.dispose();
+    _toCtrl.dispose();
+    super.dispose();
+  }
+
+  DateTime? _parse(String text) {
+    final parts = text.split('/');
+    if (parts.length != 3) return null;
+    final month = int.tryParse(parts[0]);
+    final day = int.tryParse(parts[1]);
+    final year = int.tryParse(parts[2]);
+    if (month == null || day == null || year == null || year < 1000) return null;
+    try {
+      final d = DateTime(year, month, day);
+      // Guard against DateTime auto-correcting invalid dates (e.g. Feb 30).
+      if (d.month != month || d.day != day) return null;
+      return d;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _apply() {
+    final from = _parse(_fromCtrl.text);
+    final to = _hasRange ? _parse(_toCtrl.text) : null;
+
+    setState(() {
+      _fromError = from == null ? 'Invalid date' : null;
+      _toError = _hasRange && to == null
+          ? 'Invalid date'
+          : (_hasRange && to != null && to.isBefore(from ?? to))
+          ? '"To" must be after "From"'
+          : null;
+    });
+
+    if (_fromError != null || _toError != null) return;
+    widget.onApply(DateRangeFilter(from: from!, to: to));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      decoration: const BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(color: CupertinoColors.separator, borderRadius: BorderRadius.circular(2)),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
-                  ),
-                  const Text('Filter by Date', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                  CupertinoButton(padding: EdgeInsets.zero, onPressed: _apply, child: const Text('Apply')),
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: GestureDetector(behavior: HitTestBehavior.translucent, onTap: widget.onDismiss),
+        ),
+        CompositedTransformFollower(
+          link: widget.layerLink,
+          targetAnchor: Alignment.bottomLeft,
+          followerAnchor: Alignment.topLeft,
+          offset: const Offset(0, 8),
+          child: SizedBox(
+            width: 280,
+            child: Container(
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemBackground,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(color: Color(0x1F000000), blurRadius: 12, offset: Offset(0, 4)),
+                  BoxShadow(color: Color(0x0A000000), blurRadius: 32, offset: Offset(0, 12)),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('From', style: TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel)),
-                  SizedBox(
-                    height: 180,
-                    child: CupertinoDatePicker(
-                      mode: CupertinoDatePickerMode.date,
-                      initialDateTime: _from,
-                      maximumDate: DateTime.now(),
-                      onDateTimeChanged: (d) => setState(() {
-                        _from = d;
-                        if (_to.isBefore(_from)) _to = _from;
-                      }),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Filter by Date', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          onPressed: widget.onDismiss,
+                          child: const Icon(
+                            CupertinoIcons.xmark_circle_fill,
+                            size: 20,
+                            color: CupertinoColors.tertiaryLabel,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Date range', style: TextStyle(fontSize: 15)),
-                      CupertinoSwitch(
-                        value: _hasRange,
-                        onChanged: (v) => setState(() {
-                          _hasRange = v;
-                          if (v && _to.isBefore(_from)) _to = _from;
-                        }),
-                      ),
-                    ],
-                  ),
-                  if (_hasRange) ...[
-                    const SizedBox(height: 8),
-                    const Text('To', style: TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel)),
-                    SizedBox(
-                      height: 180,
-                      child: CupertinoDatePicker(
-                        mode: CupertinoDatePickerMode.date,
-                        initialDateTime: _to,
-                        minimumDate: _from,
-                        maximumDate: DateTime.now(),
-                        onDateTimeChanged: (d) => setState(() => _to = d),
-                      ),
+                  Container(height: 0.5, color: CupertinoColors.separator),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _DateField(
+                          label: 'From',
+                          controller: _fromCtrl,
+                          error: _fromError,
+                          onChanged: (_) => setState(() => _fromError = null),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Date range', style: TextStyle(fontSize: 14)),
+                            CupertinoSwitch(
+                              value: _hasRange,
+                              activeTrackColor: AppColors.accent,
+                              onChanged: (v) => setState(() {
+                                _hasRange = v;
+                                _toError = null;
+                              }),
+                            ),
+                          ],
+                        ),
+                        if (_hasRange) ...[
+                          const SizedBox(height: 12),
+                          _DateField(
+                            label: 'To',
+                            controller: _toCtrl,
+                            error: _toError,
+                            onChanged: (_) => setState(() => _toError = null),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: CupertinoButton.filled(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            onPressed: _apply,
+                            child: const Text('Apply', style: TextStyle(fontSize: 14)),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                  const SizedBox(height: 16),
+                  ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
+    );
+  }
+}
+
+// ── Date text field ───────────────────────────────────────────────────────────
+
+class _DateField extends StatelessWidget {
+  const _DateField({required this.label, required this.controller, this.error, this.onChanged});
+
+  final String label;
+  final TextEditingController controller;
+  final String? error;
+  final ValueChanged<String>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel)),
+        const SizedBox(height: 6),
+        CupertinoTextField(
+          controller: controller,
+          placeholder: 'MM/DD/YYYY',
+          keyboardType: TextInputType.number,
+          inputFormatters: [_DateMaskFormatter()],
+          onChanged: onChanged,
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(AppSpacing.sm),
+            border: error != null ? Border.all(color: CupertinoColors.destructiveRed, width: 1) : null,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        ),
+        if (error != null) ...[
+          const SizedBox(height: 4),
+          Text(error!, style: const TextStyle(fontSize: 11, color: CupertinoColors.destructiveRed)),
+        ],
+      ],
+    );
+  }
+}
+
+class _DateMaskFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final buf = StringBuffer();
+    for (int i = 0; i < digits.length && i < 8; i++) {
+      if (i == 2 || i == 4) buf.write('/');
+      buf.write(digits[i]);
+    }
+    final text = buf.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }

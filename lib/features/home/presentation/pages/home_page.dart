@@ -147,7 +147,12 @@ class _HomePageState extends State<HomePage> {
                             child: CupertinoSearchTextField(onChanged: (q) => _cubit.search(q)),
                           ),
                         ),
-                        SliverToBoxAdapter(child: DateFilterBar(cubit: _cubit)),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 14.0, bottom: 12),
+                            child: DateFilterBar(cubit: _cubit),
+                          ),
+                        ),
                         switch (state) {
                           HomeInitial() || HomeLoading() || HomeLoggedOut() => const SliverFillRemaining(
                             child: Center(child: CupertinoActivityIndicator()),
