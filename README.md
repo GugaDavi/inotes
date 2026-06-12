@@ -75,11 +75,13 @@ lib/
     ui/           # AppColors, AppSpacing design tokens
   features/
     auth/         # Session-code auth (start, restore, clear session)
-    notes/        # Notes CRUD
-    home/         # Notes list with search
+    notes/        # Notes CRUD + tag selection
+    tags/         # Default tags seeded to Firestore; in-memory cache
+    home/         # Notes list with search and date filter
     shared/
       widgets/    # Reusable UI components (PrimaryButton, CopyButton, …)
       search/     # NoteSearcher — debounced search with isolate filtering
+      filter/     # DateRangeFilter value object
     splash/       # Lottie splash screen shown before bootstrap
   services/
     firebase/     # FirebaseClient — init + anonymous sign-in
@@ -112,6 +114,7 @@ lib/
 
 - [ ] Markdown support in note content
 - [x] Search notes (debounced, runs off main thread via isolate)
-- [ ] Filter notes in list view
+- [x] Filter notes by date (single day and range)
+- [ ] Filter notes by tag
 - [ ] Sort notes in list view
-- [ ] Note tagging / grouping
+- [x] Note tagging — up to 3 tags per note, 7 default tags seeded to Firestore

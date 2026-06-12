@@ -45,6 +45,7 @@ lib/
       formatters/       # shared formatting utilities
       widgets/          # cross-feature reusable components
       search/           # NoteSearcher — debounced search with isolate-based filtering
+      filter/           # DateRangeFilter — value object for date-range filtering
     splash/             # initial splash screen (Lottie animation shown before bootstrap)
 ```
 
@@ -63,7 +64,7 @@ Cubit → UseCase → Repository → (DataSource?)
 - Repositories call datasources **only when there are multiple data sources** (e.g. Firestore + local Hive cache). If the repository talks to a single source, it calls it directly — no datasource abstraction needed.
 
 ### Domain
-- Entities are pure Dart classes — no `toJson`/`fromJson`. Name them with the `Entity` suffix (e.g. `NoteEntity`).
+- Entities are pure Dart classes — no `toJson`/`fromJson`. Name them with the `Entity` suffix (e.g. `NoteEntity`, `NoteTagEntity`).
 - Use cases must include `UseCase` in the class name (e.g. `CreateNoteUseCase`). The file name mirrors the class: `create_note_use_case.dart`.
 - Use cases receive dependencies via constructor (no service locator in domain).
 - Use cases expose an `execute` method with named parameters — no `call`, no separate `Params` class.
@@ -74,6 +75,7 @@ Cubit → UseCase → Repository → (DataSource?)
 ### Data
 - Models extend or map to entities. They own serialization logic.
 - Create a datasource layer only when the repository aggregates two or more data sources (e.g. remote + offline). A single-source repository calls Firestore directly.
+- Use `Locator.registerLazySingleton` when the repository holds mutable state (e.g. an in-memory cache). Use `registerFactory` for stateless repositories.
 
 ### Cubit
 - One `Cubit` per UI context (e.g. `NotesCubit`, `NoteDetailCubit`).
@@ -114,6 +116,10 @@ Cubit → UseCase → Repository → (DataSource?)
 |---|---|
 | notes (CRUD) | done |
 | search notes | done |
+| date filter | done |
+| note tagging (default tags, max 3 per note) | done |
+| custom user tags | planned |
+| filter by tag on home screen | planned |
 
 ## Firebase
 
