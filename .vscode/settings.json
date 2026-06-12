@@ -1,0 +1,14 @@
+{
+  "editor.wordWrap": "on",
+  "editor.wrappingIndent": "same",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "dart.lineLength": 120,
+  "[dart]": {
+    "editor.rulers": [
+      120
+    ]
+  }
+}
