@@ -15,7 +15,7 @@ void main() {
     setUp(() async => setup = await fakeBootstrap());
 
     testWidgets('opens new note form on New Note tap', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('New Note'));
@@ -27,7 +27,7 @@ void main() {
     });
 
     testWidgets('saves note and shows it in home list', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('New Note'));
@@ -43,7 +43,7 @@ void main() {
     });
 
     testWidgets('cancel returns to home without saving', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('New Note'));
@@ -70,7 +70,7 @@ void main() {
     });
 
     testWidgets('opens pre-filled edit form with Edit Note title', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Original Title'));
@@ -84,7 +84,7 @@ void main() {
     });
 
     testWidgets('saves edited title and shows update in list', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Original Title'));
@@ -112,7 +112,7 @@ void main() {
     });
 
     testWidgets('shows confirmation dialog on delete tap', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Note to Delete'));
@@ -127,7 +127,7 @@ void main() {
     });
 
     testWidgets('removes note from list after confirming delete', (tester) async {
-      await tester.pumpWidget(App(authNotifier: setup.notifier));
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Note to Delete'));

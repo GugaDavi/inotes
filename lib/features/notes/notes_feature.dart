@@ -1,14 +1,17 @@
+import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inotes/core/contracts/feature_app.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/features/auth/domain/usecases/get_current_session_use_case.dart';
 import 'package:inotes/features/notes/data/repositories/notes_repository_impl.dart';
+import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/notes/domain/repositories/notes_repository.dart';
 import 'package:inotes/features/notes/domain/usecases/create_note_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/delete_note_use_case.dart';
-import 'package:inotes/features/notes/domain/usecases/get_note_by_id_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
 import 'package:inotes/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:inotes/features/notes/presentation/cubit/note_detail_cubit.dart';
+import 'package:inotes/features/notes/presentation/pages/note_detail_page.dart';
 import 'package:inotes/services/firestore/firestore_service.dart';
 
 class NotesFeature implements FeatureApp {
@@ -28,7 +31,6 @@ class NotesFeature implements FeatureApp {
     Locator.registerFactory<CreateNoteUseCase>(() => CreateNoteUseCase(Locator.get<NotesRepository>()));
     Locator.registerFactory<UpdateNoteUseCase>(() => UpdateNoteUseCase(Locator.get<NotesRepository>()));
     Locator.registerFactory<DeleteNoteUseCase>(() => DeleteNoteUseCase(Locator.get<NotesRepository>()));
-    Locator.registerFactory<GetNoteByIdUseCase>(() => GetNoteByIdUseCase(Locator.get<NotesRepository>()));
   }
 
   Future<void> _presentationLayer() async {
@@ -38,8 +40,36 @@ class NotesFeature implements FeatureApp {
         Locator.get<UpdateNoteUseCase>(),
         Locator.get<DeleteNoteUseCase>(),
         Locator.get<GetCurrentSessionUseCase>(),
-        Locator.get<GetNoteByIdUseCase>(),
       ),
     );
   }
+
+  @override
+  List<RouteBase> get routes => [
+    GoRoute(
+      path: '/note',
+      pageBuilder: (context, state) {
+        final note = state.extra as NoteEntity?;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          opaque: false,
+          barrierDismissible: false,
+          child: NoteDetailPage(note: note),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final curved = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            );
+            return FadeTransition(
+              opacity: curved,
+              child: ScaleTransition(scale: Tween<double>(begin: 0.5, end: 1.0).animate(curved), child: child),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 280),
+          reverseTransitionDuration: const Duration(milliseconds: 220),
+        );
+      },
+    ),
+  ];
 }

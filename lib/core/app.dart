@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 import 'package:inotes/core/router/app_router.dart';
 import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/core/ui/ui.dart';
 
 class App extends StatefulWidget {
-  const App({super.key, required this.authNotifier});
+  const App({super.key, required this.authNotifier, required this.routes});
 
   final AuthStateNotifier authNotifier;
+  final List<RouteBase> routes;
 
   @override
   State<App> createState() => _AppState();
@@ -18,7 +20,7 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    _appRouter = AppRouter(authNotifier: widget.authNotifier);
+    _appRouter = AppRouter(authNotifier: widget.authNotifier, routes: widget.routes);
   }
 
   @override
