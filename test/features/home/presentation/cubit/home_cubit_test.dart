@@ -31,6 +31,13 @@ void main() {
     content: 'Some content',
     createdAt: DateTime(2026, 6, 10),
   );
+  final tNote2 = NoteEntity(
+    id: '2',
+    userId: 'ABCD1234',
+    title: 'Flutter tips',
+    content: 'Use widgets wisely',
+    createdAt: DateTime(2026, 6, 11),
+  );
 
   setUp(() {
     mockGetNotesUseCase = MockGetNotesUseCase();
@@ -60,7 +67,7 @@ void main() {
         act: (cubit) => cubit.loadNotes(),
         expect: () => [
           const HomeLoading(),
-          HomeLoaded([tNote], tSession.code),
+          HomeLoaded(notes: [tNote], filteredNotes: [tNote], sessionCode: tSession.code),
         ],
       );
 
@@ -74,7 +81,10 @@ void main() {
           ).thenAnswer((_) async => const Success([]));
         },
         act: (cubit) => cubit.loadNotes(),
-        expect: () => [const HomeLoading(), HomeLoaded(const [], tSession.code)],
+        expect: () => [
+          const HomeLoading(),
+          HomeLoaded(notes: const [], filteredNotes: const [], sessionCode: tSession.code),
+        ],
       );
 
       blocTest<HomeCubit, HomeState>(
@@ -149,6 +159,80 @@ void main() {
         expect(cubit.sessionCode, isNull);
         cubit.close();
       });
+    });
+
+    group('search', () {
+      final tLoaded = HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote, tNote2], sessionCode: tSession.code);
+
+      blocTest<HomeCubit, HomeState>(
+        'filters by title case-insensitively after debounce',
+        build: buildCubit,
+        seed: () => tLoaded,
+        act: (cubit) => cubit.search('flutter'),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [
+          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote2], sessionCode: tSession.code, query: 'flutter'),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'filters by content case-insensitively after debounce',
+        build: buildCubit,
+        seed: () => tLoaded,
+        act: (cubit) => cubit.search('some content'),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [
+          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote], sessionCode: tSession.code, query: 'some content'),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'returns empty filteredNotes when no note matches',
+        build: buildCubit,
+        seed: () => tLoaded,
+        act: (cubit) => cubit.search('xyz123'),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [
+          HomeLoaded(notes: [tNote, tNote2], filteredNotes: const [], sessionCode: tSession.code, query: 'xyz123'),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'returns all notes when query is cleared after debounce',
+        build: buildCubit,
+        seed: () =>
+            HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote2], sessionCode: tSession.code, query: 'flutter'),
+        act: (cubit) => cubit.search(''),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [
+          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote, tNote2], sessionCode: tSession.code),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'only emits once for multiple rapid calls — debounce coalesces them',
+        build: buildCubit,
+        seed: () => tLoaded,
+        act: (cubit) {
+          cubit.search('f');
+          cubit.search('fl');
+          cubit.search('flu');
+          cubit.search('flutter');
+        },
+        wait: const Duration(milliseconds: 400),
+        expect: () => [
+          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote2], sessionCode: tSession.code, query: 'flutter'),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'does nothing when state is not HomeLoaded',
+        build: buildCubit,
+        seed: () => const HomeLoading(),
+        act: (cubit) => cubit.search('anything'),
+        wait: const Duration(milliseconds: 400),
+        expect: () => [],
+      );
     });
 
     group('logout', () {

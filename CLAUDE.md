@@ -44,6 +44,7 @@ lib/
     shared/
       formatters/       # shared formatting utilities
       widgets/          # cross-feature reusable components
+      search/           # NoteSearcher — debounced search with isolate-based filtering
     splash/             # initial splash screen (Lottie animation shown before bootstrap)
 ```
 
@@ -78,6 +79,12 @@ Cubit → UseCase → Repository → (DataSource?)
 - One `Cubit` per UI context (e.g. `NotesCubit`, `NoteDetailCubit`).
 - States use `sealed class` or `freezed` for exhaustive matching.
 - Cubits have no knowledge of widgets — they receive use cases via constructor.
+- Inline lambdas passed to collaborators (e.g. `NoteSearcher(onResult:)`) must be extracted into named private methods on the cubit for readability.
+
+### Shared helpers
+- Non-UI, non-domain logic that crosses features lives in `features/shared/`.
+- `NoteSearcher` (`shared/search/`) is the reference pattern: it encapsulates a debounce `Timer` and a `compute()` call that runs filtering in a separate isolate. Cubits instantiate it with a named callback method and call `dispose()` in `close()`.
+- Shared helpers own their async machinery — cubits only call `search()` and `dispose()`.
 
 ### Formatting
 - Line width is 120 characters (`page_width: 120` in `analysis_options.yaml`).
@@ -97,6 +104,7 @@ Cubit → UseCase → Repository → (DataSource?)
 - `fake_app_bootstrap.dart` resets `GetIt.instance`, registers `FirestoreService` backed by `FakeFirebaseFirestore`, initialises all features, and returns `AppTestSetup` (`notifier` + `fakeFirestore`). Pass `notifier` to `App(authNotifier:)`. Use `fakeFirestore` to seed data for scenarios that require pre-existing notes.
 - Use `setUpAll` for read-only groups (avoids redundant bootstraps). Use `setUp` for groups that write or mutate state.
 - When the note detail modal is open (`opaque: false`), the home page stays in the widget tree. Use `find.byWidgetPredicate` with the field's `placeholder` to target `CupertinoTextField` widgets unambiguously — `CupertinoSearchTextField` wraps a `CupertinoTextField` internally and would otherwise be picked up by `.first`/`.last`.
+- When testing features that use `compute()` / `Isolate.run()`, wrap the interaction + delay in `tester.runAsync()` so the real event loop processes the ReceivePort result. Call `FocusManager.instance.primaryFocus?.unfocus()` inside `runAsync` before it exits to cancel any cursor-blink timers created in the real zone — otherwise they fire on unmounted widgets after the test completes.
 - Run: `flutter test test/integration/`
 - **TODO:** Replace `fake_app_bootstrap.dart` with a real bootstrap that connects to a dedicated Firebase test environment. Tests should seed and clean up data via the real Firestore, making integration tests a true end-to-end safety net.
 
@@ -105,6 +113,7 @@ Cubit → UseCase → Repository → (DataSource?)
 | Feature | Status |
 |---|---|
 | notes (CRUD) | done |
+| search notes | done |
 
 ## Firebase
 

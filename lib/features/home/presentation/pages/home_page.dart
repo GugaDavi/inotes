@@ -135,23 +135,28 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                        const SliverToBoxAdapter(
-                          child: Padding(padding: EdgeInsets.all(AppSpacing.lg), child: CupertinoSearchTextField()),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppSpacing.lg),
+                            child: CupertinoSearchTextField(onChanged: (q) => _cubit.search(q)),
+                          ),
                         ),
                         switch (state) {
                           HomeInitial() || HomeLoading() || HomeLoggedOut() => const SliverFillRemaining(
                             child: Center(child: CupertinoActivityIndicator()),
                           ),
-                          HomeLoaded(:final notes) when notes.isEmpty => SliverFillRemaining(
+                          HomeLoaded(:final filteredNotes) when filteredNotes.isEmpty => SliverFillRemaining(
                             hasScrollBody: false,
                             child: _EmptyState(onCreateNote: _openNote),
                           ),
-                          HomeLoaded(:final notes) => SliverPadding(
+                          HomeLoaded(:final filteredNotes) => SliverPadding(
                             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                             sliver: SliverList.builder(
-                              itemCount: notes.length,
-                              itemBuilder: (context, index) =>
-                                  NoteListTile(note: notes[index], onTap: () => _openNote(notes[index])),
+                              itemCount: filteredNotes.length,
+                              itemBuilder: (context, index) => NoteListTile(
+                                note: filteredNotes[index],
+                                onTap: () => _openNote(filteredNotes[index]),
+                              ),
                             ),
                           ),
                           HomeError() => const SliverFillRemaining(

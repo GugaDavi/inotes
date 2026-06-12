@@ -20,13 +20,15 @@ final class HomeLoading extends HomeState {
 }
 
 final class HomeLoaded extends HomeState {
-  const HomeLoaded(this.notes, this.sessionCode);
+  const HomeLoaded({required this.notes, required this.filteredNotes, required this.sessionCode, this.query = ''});
 
   final List<NoteEntity> notes;
+  final List<NoteEntity> filteredNotes;
   final String sessionCode;
+  final String query;
 
   @override
-  List<Object?> get props => [notes, sessionCode];
+  List<Object?> get props => [notes, filteredNotes, sessionCode, query];
 }
 
 final class HomeError extends HomeState {

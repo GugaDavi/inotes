@@ -79,6 +79,7 @@ lib/
     home/         # Notes list with search
     shared/
       widgets/    # Reusable UI components (PrimaryButton, CopyButton, …)
+      search/     # NoteSearcher — debounced search with isolate filtering
     splash/       # Lottie splash screen shown before bootstrap
   services/
     firebase/     # FirebaseClient — init + anonymous sign-in
@@ -110,7 +111,7 @@ lib/
 ### Bonus
 
 - [ ] Markdown support in note content
-- [ ] Search notes
+- [x] Search notes (debounced, runs off main thread via isolate)
 - [ ] Filter notes in list view
 - [ ] Sort notes in list view
 - [ ] Note tagging / grouping
