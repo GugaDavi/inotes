@@ -4,7 +4,7 @@ import 'package:inotes/core/app.dart';
 
 import '../helpers/fake_app_bootstrap.dart';
 
-// Must exceed the 300ms debounce so the timer fires and the isolate completes.
+// Must exceed the 300ms debounce so the timer fires.
 const _searchSettle = Duration(milliseconds: 400);
 
 void main() {
@@ -118,11 +118,8 @@ void main() {
     });
 
     Future<void> search(WidgetTester tester, String query) async {
-      await tester.runAsync(() async {
-        await tester.enterText(find.byType(CupertinoSearchTextField), query);
-        await Future.delayed(_searchSettle);
-        FocusManager.instance.primaryFocus?.unfocus();
-      });
+      await tester.enterText(find.byType(CupertinoSearchTextField), query);
+      await tester.pump(_searchSettle);
       await tester.pumpAndSettle();
     }
 
