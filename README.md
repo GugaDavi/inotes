@@ -79,9 +79,10 @@ lib/
     tags/         # Default tags seeded to Firestore; in-memory cache
     home/         # Notes list with search, date filter, and tag filter
     shared/
-      widgets/    # Reusable UI components (PrimaryButton, CopyButton, …)
+      widgets/    # Reusable UI components (PrimaryButton, CopyButton, DateField, …)
       search/     # NoteSearcher — debounced search with isolate filtering
-      filter/     # DateRangeFilter value object
+      filter/     # DateRangeFilter value object + NoteFilterHelper
+      sort/       # SortOption value object (SortField + SortDirection)
     splash/       # Lottie splash screen shown before bootstrap
   services/
     firebase/     # FirebaseClient — init + anonymous sign-in
@@ -116,5 +117,5 @@ lib/
 - [x] Search notes (debounced, runs off main thread via isolate)
 - [x] Filter notes by date (single day and range)
 - [x] Filter notes by tag (unified filter overlay with active filter chips)
-- [ ] Sort notes in list view
+- [x] Sort notes (by created/updated date, ascending or descending)
 - [x] Note tagging — up to 3 tags per note, 7 default tags seeded to Firestore
