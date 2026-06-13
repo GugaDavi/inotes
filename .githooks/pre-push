@@ -1,0 +1,22 @@
+#!/bin/sh
+
+echo "▶ flutter analyze"
+flutter analyze
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "✗ flutter analyze failed. Fix the issues or run 'git push --no-verify' to skip."
+  exit 1
+fi
+
+echo ""
+echo "▶ flutter test"
+flutter test
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "✗ flutter test failed. Fix the issues or run 'git push --no-verify' to skip."
+  exit 1
+fi
+
+echo ""
+echo "✓ All checks passed."
+exit 0
