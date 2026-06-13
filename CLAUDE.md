@@ -43,9 +43,10 @@ lib/
         cubits/         # one subfolder per cubit: cubits/xyz_cubit/ holds XyzCubit + XyzState
     shared/
       formatters/       # shared formatting utilities
-      widgets/          # cross-feature reusable components
+      widgets/          # cross-feature reusable components (DateField, DateMaskFormatter, buttons/)
       search/           # NoteSearcher — debounced search with isolate-based filtering
-      filter/           # DateRangeFilter — value object for date-range filtering
+      filter/           # DateRangeFilter value object + NoteFilterHelper (date/tag filtering and sort)
+      sort/             # SortOption value object (SortField + SortDirection enums)
     splash/             # initial splash screen (Lottie animation shown before bootstrap)
 ```
 
@@ -88,6 +89,8 @@ Cubit → UseCase → Repository → (DataSource?)
 - Non-UI, non-domain logic that crosses features lives in `features/shared/`.
 - `NoteSearcher` (`shared/search/`) is the reference pattern: it encapsulates a debounce `Timer` and a `compute()` call that runs filtering in a separate isolate. Cubits instantiate it with a named callback method and call `dispose()` in `close()`.
 - Shared helpers own their async machinery — cubits only call `search()` and `dispose()`.
+- Filtering and sorting logic is extracted to `NoteFilterHelper` (`shared/filter/`) — a plain class with static-style methods (`filterByDate`, `filterByTags`, `sort`). Cubits delegate to it instead of owning the logic inline.
+- Sort options are represented by `SortOption` (`shared/sort/`), which composes `SortField` and `SortDirection` enums. `FilterOptionsEntity` holds the active `SortOption`; `FilterState.isActive` must include it.
 
 ### Formatting
 - Line width is 120 characters (`page_width: 120` in `analysis_options.yaml`).
@@ -120,6 +123,7 @@ Cubit → UseCase → Repository → (DataSource?)
 | date filter | done |
 | note tagging (default tags, max 3 per note) | done |
 | filter by tag on home screen | done |
+| sort notes (by created/updated, asc/desc) | done |
 | custom user tags | planned |
 
 ## Firebase
