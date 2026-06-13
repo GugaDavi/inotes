@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/router/auth_state_notifier.dart';
 import 'package:inotes/core/ui/ui.dart';
-import 'package:inotes/features/home/presentation/cubit/home_cubit.dart';
-import 'package:inotes/features/home/presentation/cubit/home_state.dart';
-import 'package:inotes/features/home/presentation/widgets/date_filter_bar.dart';
+import 'package:inotes/features/home/presentation/cubits/filter_cubit/filter_cubit.dart';
+import 'package:inotes/features/home/presentation/cubits/filter_cubit/filter_state.dart';
+import 'package:inotes/features/home/presentation/cubits/home_cubit/home_cubit.dart';
+import 'package:inotes/features/home/presentation/cubits/home_cubit/home_state.dart';
+import 'package:inotes/features/home/presentation/widgets/filter_bar.dart';
 import 'package:inotes/features/home/presentation/widgets/note_list_tile.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/shared/widgets/buttons/copy_button.dart';
@@ -21,16 +23,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late final HomeCubit _cubit;
+  late final FilterCubit _filterCubit;
 
   @override
   void initState() {
     super.initState();
+    _filterCubit = Locator.get<FilterCubit>()..loadTags();
     _cubit = Locator.get<HomeCubit>()..loadNotes();
   }
 
   @override
   void dispose() {
     _cubit.close();
+    _filterCubit.close();
     super.dispose();
   }
 
@@ -81,116 +86,120 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<HomeCubit, HomeState>(
-      bloc: _cubit,
-      listener: (context, state) {
-        if (state is HomeLoggedOut) {
-          Locator.get<AuthStateNotifier>().setAuthenticated(false);
-        }
-      },
-      builder: (context, state) {
-        return CupertinoPageScaffold(
-          backgroundColor: AppColors.background,
-          child: Column(
-            children: [
-              Expanded(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.lg,
-                              AppSpacing.lg,
-                              AppSpacing.lg,
-                              AppSpacing.sm,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'iNotes',
-                                  style: TextStyle(
-                                    fontSize: 34,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.41,
-                                    color: CupertinoColors.label,
+    return BlocListener<FilterCubit, FilterState>(
+      bloc: _filterCubit,
+      listener: (context, state) => _cubit.handleFilterChange(state.options),
+      child: BlocConsumer<HomeCubit, HomeState>(
+        bloc: _cubit,
+        listener: (context, state) {
+          if (state is HomeLoggedOut) {
+            Locator.get<AuthStateNotifier>().setAuthenticated(false);
+          }
+        },
+        builder: (context, state) {
+          return CupertinoPageScaffold(
+            backgroundColor: AppColors.background,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: AppSpacing.maxContentWidth),
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.lg,
+                                AppSpacing.lg,
+                                AppSpacing.lg,
+                                AppSpacing.sm,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'iNotes',
+                                    style: TextStyle(
+                                      fontSize: 34,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.41,
+                                      color: CupertinoColors.label,
+                                    ),
                                   ),
-                                ),
-                                Row(
-                                  children: [
-                                    if (_cubit.sessionCode != null)
-                                      CupertinoButton(
-                                        padding: EdgeInsets.zero,
-                                        onPressed: () => _showSessionDialog(_cubit.sessionCode!),
-                                        child: const Icon(CupertinoIcons.person_circle),
-                                      ),
-                                    const SizedBox(width: AppSpacing.sm),
-                                    PrimaryButton(label: 'New Note', onPressed: _openNote),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.lg,
-                              AppSpacing.lg,
-                              AppSpacing.lg,
-                              AppSpacing.sm,
-                            ),
-                            child: CupertinoSearchTextField(onChanged: (q) => _cubit.search(q)),
-                          ),
-                        ),
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 14.0, bottom: 12),
-                            child: DateFilterBar(cubit: _cubit),
-                          ),
-                        ),
-                        switch (state) {
-                          HomeInitial() || HomeLoading() || HomeLoggedOut() => const SliverFillRemaining(
-                            child: Center(child: CupertinoActivityIndicator()),
-                          ),
-                          HomeLoaded(:final filteredNotes) when filteredNotes.isEmpty => SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: _EmptyState(onCreateNote: _openNote),
-                          ),
-                          HomeLoaded(:final filteredNotes) => SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                            sliver: SliverList.builder(
-                              itemCount: filteredNotes.length,
-                              itemBuilder: (context, index) => NoteListTile(
-                                note: filteredNotes[index],
-                                onTap: () => _openNote(filteredNotes[index]),
+                                  Row(
+                                    children: [
+                                      if (_cubit.sessionCode != null)
+                                        CupertinoButton(
+                                          padding: EdgeInsets.zero,
+                                          onPressed: () => _showSessionDialog(_cubit.sessionCode!),
+                                          child: const Icon(CupertinoIcons.person_circle),
+                                        ),
+                                      const SizedBox(width: AppSpacing.sm),
+                                      PrimaryButton(label: 'New Note', onPressed: _openNote),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          HomeError() => const SliverFillRemaining(
-                            hasScrollBody: false,
-                            child: Center(
-                              child: Text(
-                                'Could not load notes.',
-                                style: TextStyle(color: CupertinoColors.secondaryLabel),
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.lg,
+                                AppSpacing.lg,
+                                AppSpacing.lg,
+                                AppSpacing.sm,
                               ),
+                              child: CupertinoSearchTextField(onChanged: (q) => _cubit.applyFilter(q)),
                             ),
                           ),
-                        },
-                      ],
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 14.0, bottom: 12),
+                              child: FilterBar(homeCubit: _cubit, filterCubit: _filterCubit),
+                            ),
+                          ),
+                          switch (state) {
+                            HomeInitial() || HomeLoading() || HomeLoggedOut() => const SliverFillRemaining(
+                              child: Center(child: CupertinoActivityIndicator()),
+                            ),
+                            HomeLoaded(:final filteredNotes) when filteredNotes.isEmpty => SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: _EmptyState(onCreateNote: _openNote),
+                            ),
+                            HomeLoaded(:final filteredNotes) => SliverPadding(
+                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                              sliver: SliverList.builder(
+                                itemCount: filteredNotes.length,
+                                itemBuilder: (context, index) => NoteListTile(
+                                  note: filteredNotes[index],
+                                  onTap: () => _openNote(filteredNotes[index]),
+                                ),
+                              ),
+                            ),
+                            HomeError() => const SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: Text(
+                                  'Could not load notes.',
+                                  style: TextStyle(color: CupertinoColors.secondaryLabel),
+                                ),
+                              ),
+                            ),
+                          },
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              _BottomBar(cubit: _cubit),
-            ],
-          ),
-        );
-      },
+                _BottomBar(cubit: _cubit),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
