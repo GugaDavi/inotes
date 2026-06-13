@@ -52,6 +52,18 @@ class NoteDetailCubit extends Cubit<NoteDetailState> {
 
   List<String> get _selectedTagIds => _selectedTags.map((t) => t.id).toList();
 
+  void togglePreview() {
+    final currentState = state;
+    if (currentState is! NoteDetailTagsLoaded) return;
+    emit(
+      NoteDetailTagsLoaded(
+        availableTags: currentState.availableTags,
+        selectedTagIds: currentState.selectedTagIds,
+        isPreviewMode: !currentState.isPreviewMode,
+      ),
+    );
+  }
+
   Future<void> save({String? id, required String title, required String content}) async {
     emit(const NoteDetailSaving());
 

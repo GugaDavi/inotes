@@ -14,13 +14,14 @@ final class NoteDetailInitial extends NoteDetailState {
 }
 
 final class NoteDetailTagsLoaded extends NoteDetailState {
-  const NoteDetailTagsLoaded({required this.availableTags, required this.selectedTagIds});
+  const NoteDetailTagsLoaded({required this.availableTags, required this.selectedTagIds, this.isPreviewMode = false});
 
   final List<TagEntity> availableTags;
   final List<String> selectedTagIds;
+  final bool isPreviewMode;
 
   @override
-  List<Object?> get props => [availableTags, selectedTagIds];
+  List<Object?> get props => [availableTags, selectedTagIds, isPreviewMode];
 }
 
 final class NoteDetailSaving extends NoteDetailState {
