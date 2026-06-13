@@ -8,6 +8,7 @@ class NoteEntity extends Equatable {
     required this.title,
     required this.content,
     required this.createdAt,
+    this.updatedAt,
     this.tags = const [],
   });
 
@@ -16,8 +17,9 @@ class NoteEntity extends Equatable {
   final String title;
   final String content;
   final DateTime createdAt;
+  final DateTime? updatedAt;
   final List<NoteTagEntity> tags;
 
   @override
-  List<Object?> get props => [id, userId, title, content, createdAt, tags];
+  List<Object?> get props => [id, userId, title, content, createdAt, updatedAt, tags];
 }

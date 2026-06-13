@@ -3,6 +3,7 @@ import 'package:inotes/core/result/result.dart';
 import 'package:inotes/features/home/domain/entities/filter_options_entity.dart';
 import 'package:inotes/features/home/presentation/cubits/filter_cubit/filter_state.dart';
 import 'package:inotes/features/shared/filter/date_range_filter.dart';
+import 'package:inotes/features/shared/sort/sort_option.dart';
 import 'package:inotes/features/tags/domain/entities/tag_entity.dart';
 import 'package:inotes/features/tags/domain/usecases/get_tags_use_case.dart';
 
@@ -19,10 +20,10 @@ class FilterCubit extends Cubit<FilterState> {
     if (result case Success(:final value)) _availableTags = value;
   }
 
-  void applyFilters(DateRangeFilter? dateFilter, List<String> tagFilter) {
+  void applyFilters(DateRangeFilter? dateFilter, List<String> tagFilter, {SortOption? sortOption}) {
     emit(
       FilterState(
-        options: FilterOptionsEntity(dateFilter: dateFilter, tagFilter: tagFilter),
+        options: FilterOptionsEntity(dateFilter: dateFilter, tagFilter: tagFilter, sortOption: sortOption),
       ),
     );
   }

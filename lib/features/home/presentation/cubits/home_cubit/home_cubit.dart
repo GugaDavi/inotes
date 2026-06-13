@@ -6,6 +6,7 @@ import 'package:inotes/features/home/domain/entities/filter_options_entity.dart'
 import 'package:inotes/features/home/presentation/cubits/home_cubit/home_state.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
+import 'package:inotes/features/shared/filter/note_filter_helper.dart';
 import 'package:inotes/features/shared/search/note_searcher.dart';
 
 class HomeCubit extends Cubit<HomeState> {
@@ -73,14 +74,10 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   List<NoteEntity> _applyFilters(List<NoteEntity> notes) {
-    var result = notes;
-    if (_currentOptions?.dateFilter != null) {
-      result = result.where((n) => _currentOptions!.dateFilter!.matches(n.createdAt)).toList();
-    }
-    if (_currentOptions?.tagFilter.isNotEmpty == true) {
-      result = result.where((n) => n.tags.any((t) => _currentOptions!.tagFilter.contains(t.id))).toList();
-    }
-    return result;
+    final options = _currentOptions;
+    var result = NoteFilterHelper.filterByDate(notes, options?.dateFilter);
+    result = NoteFilterHelper.filterByTags(result, options?.tagFilter ?? []);
+    return NoteFilterHelper.sort(result, options?.sortOption);
   }
 
   Future<void> logout() async {

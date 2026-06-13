@@ -6,7 +6,8 @@ class FilterState extends Equatable {
 
   final FilterOptionsEntity? options;
 
-  bool get isActive => options?.dateFilter != null || options?.tagFilter.isNotEmpty == true;
+  bool get isActive =>
+      options?.dateFilter != null || options?.tagFilter.isNotEmpty == true || options?.sortOption != null;
 
   @override
   List<Object?> get props => [options];

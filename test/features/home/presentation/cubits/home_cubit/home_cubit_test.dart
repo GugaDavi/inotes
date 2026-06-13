@@ -14,6 +14,7 @@ import 'package:inotes/features/notes/domain/entities/note_tag_entity.dart';
 import 'package:inotes/features/notes/domain/errors/note_failures.dart';
 import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
 import 'package:inotes/features/shared/filter/date_range_filter.dart';
+import 'package:inotes/features/shared/sort/sort_option.dart';
 
 class MockGetNotesUseCase extends Mock implements GetNotesUseCase {}
 
@@ -289,6 +290,124 @@ void main() {
 
         // "Flutter tips" matches text but not tag; "Tagged" matches tag but not text
         expect((cubit.state as HomeLoaded).filteredNotes, isEmpty);
+        cubit.close();
+      });
+
+      test('sorts notes by title ascending', () async {
+        final noteA = NoteEntity(
+          id: '40',
+          userId: tSession.code,
+          title: 'Banana',
+          content: 'content',
+          createdAt: DateTime(2026, 6, 10),
+        );
+        final noteB = NoteEntity(
+          id: '41',
+          userId: tSession.code,
+          title: 'Apple',
+          content: 'content',
+          createdAt: DateTime(2026, 6, 11),
+        );
+        final noteC = NoteEntity(
+          id: '42',
+          userId: tSession.code,
+          title: 'Cherry',
+          content: 'content',
+          createdAt: DateTime(2026, 6, 9),
+        );
+
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Success([noteA, noteB, noteC]));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+
+        cubit.handleFilterChange(
+          const FilterOptionsEntity(sortOption: SortOption(field: SortField.title, direction: SortDirection.asc)),
+        );
+
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        final filtered = (cubit.state as HomeLoaded).filteredNotes;
+        expect(filtered.map((n) => n.title).toList(), ['Apple', 'Banana', 'Cherry']);
+        cubit.close();
+      });
+
+      test('sorts notes by createdAt descending', () async {
+        final noteOld = NoteEntity(
+          id: '50',
+          userId: tSession.code,
+          title: 'Old',
+          content: 'content',
+          createdAt: DateTime(2026, 6, 1),
+        );
+        final noteNew = NoteEntity(
+          id: '51',
+          userId: tSession.code,
+          title: 'New',
+          content: 'content',
+          createdAt: DateTime(2026, 6, 13),
+        );
+
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Success([noteOld, noteNew]));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+
+        cubit.handleFilterChange(
+          const FilterOptionsEntity(
+            sortOption: SortOption(field: SortField.createdAt, direction: SortDirection.desc),
+          ),
+        );
+
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        final filtered = (cubit.state as HomeLoaded).filteredNotes;
+        expect(filtered.map((n) => n.id).toList(), ['51', '50']);
+        cubit.close();
+      });
+
+      test('sorts by updatedAt, falling back to createdAt when updatedAt is null', () async {
+        final noteWithUpdated = NoteEntity(
+          id: '60',
+          userId: tSession.code,
+          title: 'Has updated',
+          content: 'content',
+          createdAt: DateTime(2026, 6, 1),
+          updatedAt: DateTime(2026, 6, 13),
+        );
+        final noteWithoutUpdated = NoteEntity(
+          id: '61',
+          userId: tSession.code,
+          title: 'No updated',
+          content: 'content',
+          createdAt: DateTime(2026, 6, 5),
+        );
+
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Success([noteWithUpdated, noteWithoutUpdated]));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+
+        cubit.handleFilterChange(
+          const FilterOptionsEntity(
+            sortOption: SortOption(field: SortField.updatedAt, direction: SortDirection.desc),
+          ),
+        );
+
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        final filtered = (cubit.state as HomeLoaded).filteredNotes;
+        // noteWithUpdated has updatedAt 2026-06-13, noteWithoutUpdated falls back to createdAt 2026-06-05
+        expect(filtered.map((n) => n.id).toList(), ['60', '61']);
         cubit.close();
       });
     });

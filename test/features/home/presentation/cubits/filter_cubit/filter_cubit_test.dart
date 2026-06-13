@@ -6,6 +6,7 @@ import 'package:inotes/features/home/domain/entities/filter_options_entity.dart'
 import 'package:inotes/features/home/presentation/cubits/filter_cubit/filter_cubit.dart';
 import 'package:inotes/features/home/presentation/cubits/filter_cubit/filter_state.dart';
 import 'package:inotes/features/shared/filter/date_range_filter.dart';
+import 'package:inotes/features/shared/sort/sort_option.dart';
 import 'package:inotes/features/tags/domain/entities/tag_entity.dart';
 import 'package:inotes/features/tags/domain/errors/tag_failures.dart';
 import 'package:inotes/features/tags/domain/usecases/get_tags_use_case.dart';
@@ -68,6 +69,24 @@ void main() {
       );
 
       blocTest<FilterCubit, FilterState>(
+        'emits state with sort option',
+        build: buildCubit,
+        act:
+            (cubit) => cubit.applyFilters(
+              null,
+              [],
+              sortOption: const SortOption(field: SortField.title, direction: SortDirection.asc),
+            ),
+        expect: () => [
+          const FilterState(
+            options: FilterOptionsEntity(
+              sortOption: SortOption(field: SortField.title, direction: SortDirection.asc),
+            ),
+          ),
+        ],
+      );
+
+      blocTest<FilterCubit, FilterState>(
         'emits state with empty options when null date and empty tags passed',
         build: buildCubit,
         act: (cubit) => cubit.applyFilters(null, []),
@@ -99,6 +118,21 @@ void main() {
       test('is false after date and tags are cleared', () {
         final cubit = buildCubit();
         cubit.applyFilters(DateRangeFilter(from: DateTime(2026, 6, 11)), ['tag-work']);
+        cubit.applyFilters(null, []);
+        expect(cubit.state.isActive, isFalse);
+        cubit.close();
+      });
+
+      test('is true when sort option is set', () {
+        final cubit = buildCubit();
+        cubit.applyFilters(null, [], sortOption: const SortOption(field: SortField.title, direction: SortDirection.asc));
+        expect(cubit.state.isActive, isTrue);
+        cubit.close();
+      });
+
+      test('is false when only empty options applied after sort', () {
+        final cubit = buildCubit();
+        cubit.applyFilters(null, [], sortOption: const SortOption(field: SortField.title, direction: SortDirection.asc));
         cubit.applyFilters(null, []);
         expect(cubit.state.isActive, isFalse);
         cubit.close();
