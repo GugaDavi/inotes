@@ -8,6 +8,7 @@ class NoteModel extends NoteEntity {
     required super.title,
     required super.content,
     required super.createdAt,
+    super.updatedAt,
     super.tags,
   });
 
@@ -17,6 +18,7 @@ class NoteModel extends NoteEntity {
     title: data['title'] as String,
     content: data['content'] as String,
     createdAt: data['createdAt'] as DateTime,
+    updatedAt: data['updatedAt'] as DateTime?,
     tags: (data['tags'] as List<dynamic>? ?? []).map((t) {
       final m = t as Map<String, dynamic>;
       return NoteTagEntity(id: m['id'] as String, label: m['label'] as String, color: m['color'] as int);
@@ -28,6 +30,7 @@ class NoteModel extends NoteEntity {
     'title': title,
     'content': content,
     'createdAt': createdAt,
+    if (updatedAt != null) 'updatedAt': updatedAt,
     'tags': tags.map((t) => {'id': t.id, 'label': t.label, 'color': t.color}).toList(),
   };
 }

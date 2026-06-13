@@ -176,4 +176,93 @@ void main() {
       expect(find.text('Meeting Notes'), findsOneWidget);
     });
   });
+
+  group('HomePage - filter bar', () {
+    late AppTestSetup setup;
+
+    setUpAll(() async {
+      setup = await fakeBootstrap();
+      await setup.fakeFirestore.seedNote(
+        title: 'Shopping List',
+        content: 'Milk, eggs, bread',
+        createdAt: DateTime(2026, 6, 10),
+      );
+      await setup.fakeFirestore.seedNote(
+        title: 'Meeting Notes',
+        content: 'Discuss roadmap',
+        createdAt: DateTime(2026, 6, 9),
+      );
+    });
+
+    // The filter overlay can exceed the default 800×600 test surface when the
+    // direction-chip row is visible. Each test that opens the overlay sets a
+    // taller surface and resets it afterwards.
+    void useTallSurface(WidgetTester tester) {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+    }
+
+    Future<void> applySort(WidgetTester tester, String fieldLabel) async {
+      await tester.tap(find.text('Filter'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(fieldLabel));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('filter button is not active before any filter is applied', (tester) async {
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
+      await tester.pumpAndSettle();
+
+      final activeButton = find.byWidgetPredicate(
+        (w) => w is Container && (w.decoration as BoxDecoration?)?.color == CupertinoColors.activeBlue,
+      );
+      expect(activeButton, findsNothing);
+    });
+
+    testWidgets('filter button becomes active when sort option is applied', (tester) async {
+      useTallSurface(tester);
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
+      await tester.pumpAndSettle();
+
+      await applySort(tester, 'Title');
+
+      final activeButton = find.byWidgetPredicate(
+        (w) => w is Container && (w.decoration as BoxDecoration?)?.color == CupertinoColors.activeBlue,
+      );
+      expect(activeButton, findsOneWidget);
+    });
+
+    testWidgets('sort chip appears in filter bar after sort is applied', (tester) async {
+      useTallSurface(tester);
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
+      await tester.pumpAndSettle();
+
+      await applySort(tester, 'Title');
+
+      // Overlay is closed; "Title" now appears only in the filter bar sort chip.
+      expect(find.text('Filters'), findsNothing);
+      expect(find.text('Title'), findsOneWidget);
+    });
+
+    testWidgets('filter button becomes inactive after sort chip is cleared', (tester) async {
+      useTallSurface(tester);
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
+      await tester.pumpAndSettle();
+
+      await applySort(tester, 'Title');
+
+      // Clear the sort chip via its ✕ icon
+      await tester.tap(find.byIcon(CupertinoIcons.xmark_circle_fill).first);
+      await tester.pumpAndSettle();
+
+      final activeButton = find.byWidgetPredicate(
+        (w) => w is Container && (w.decoration as BoxDecoration?)?.color == CupertinoColors.activeBlue,
+      );
+      expect(activeButton, findsNothing);
+    });
+  });
 }

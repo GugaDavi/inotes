@@ -64,6 +64,7 @@ class NotesRepositoryImpl implements NotesRepository {
         data: {
           'title': title,
           'content': content,
+          'updatedAt': DateTime.now(),
           'tags': tags.map((t) => {'id': t.id, 'label': t.label, 'color': t.color}).toList(),
         },
       );
