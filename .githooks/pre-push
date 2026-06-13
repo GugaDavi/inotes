@@ -1,5 +1,7 @@
 #!/bin/sh
 
+[ -f .env ] || touch .env
+
 echo "▶ flutter analyze"
 flutter analyze
 if [ $? -ne 0 ]; then
