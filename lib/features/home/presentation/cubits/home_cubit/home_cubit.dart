@@ -65,18 +65,11 @@ class HomeCubit extends Cubit<HomeState> {
     _searcher.search(current.notes, query);
   }
 
-  void _onSearchResult(List<NoteEntity> textFiltered, String query) {
+  void _onSearchResult(List<NoteEntity> textFiltered) {
     final current = state;
     if (current is! HomeLoaded || isClosed) return;
     final filtered = _applyFilters(textFiltered);
-    emit(
-      HomeLoaded(
-        notes: current.notes,
-        filteredNotes: filtered,
-        sessionCode: current.sessionCode,
-        textFiltered: query.isEmpty ? null : query,
-      ),
-    );
+    emit(HomeLoaded(notes: current.notes, filteredNotes: filtered, sessionCode: current.sessionCode));
   }
 
   List<NoteEntity> _applyFilters(List<NoteEntity> notes) {

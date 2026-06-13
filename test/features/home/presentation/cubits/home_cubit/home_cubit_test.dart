@@ -330,41 +330,6 @@ void main() {
         cubit.close();
       });
 
-      test('sets textFiltered on state when query is non-empty', () async {
-        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
-        when(
-          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
-        ).thenAnswer((_) async => Success(allNotes));
-
-        final cubit = buildCubit();
-        await cubit.loadNotes();
-
-        cubit.applyFilter('flutter');
-        await Future.delayed(const Duration(milliseconds: 400));
-
-        expect((cubit.state as HomeLoaded).textFiltered, 'flutter');
-        cubit.close();
-      });
-
-      test('clears textFiltered when query is empty', () async {
-        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
-        when(
-          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
-        ).thenAnswer((_) async => Success(allNotes));
-
-        final cubit = buildCubit();
-        await cubit.loadNotes();
-
-        cubit.applyFilter('flutter');
-        await Future.delayed(const Duration(milliseconds: 400));
-
-        cubit.applyFilter('');
-        await Future.delayed(const Duration(milliseconds: 400));
-
-        expect((cubit.state as HomeLoaded).textFiltered, isNull);
-        cubit.close();
-      });
-
       test('does nothing when state is not HomeLoaded', () async {
         final cubit = buildCubit();
         cubit.applyFilter('flutter');

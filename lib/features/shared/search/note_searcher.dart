@@ -5,7 +5,7 @@ import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 class NoteSearcher {
   NoteSearcher({required this._onResult, this.debounce = const Duration(milliseconds: 300)});
 
-  final void Function(List<NoteEntity>, String) _onResult;
+  final void Function(List<NoteEntity>) _onResult;
   final Duration debounce;
   Timer? _timer;
 
@@ -16,14 +16,14 @@ class NoteSearcher {
 
   void _perform(List<NoteEntity> notes, String query) {
     if (query.isEmpty) {
-      _onResult(notes, query);
+      _onResult(notes);
       return;
     }
     final q = query.toLowerCase();
     final filtered = notes
         .where((n) => n.title.toLowerCase().contains(q) || n.content.toLowerCase().contains(q))
         .toList();
-    _onResult(filtered, query);
+    _onResult(filtered);
   }
 
   void dispose() => _timer?.cancel();
