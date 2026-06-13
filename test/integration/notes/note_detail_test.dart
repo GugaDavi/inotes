@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inotes/core/app.dart';
 
@@ -6,7 +7,8 @@ import '../helpers/fake_app_bootstrap.dart';
 
 Finder _titleField() => find.byWidgetPredicate((w) => w is CupertinoTextField && w.placeholder == 'Title');
 
-Finder _contentField() => find.byWidgetPredicate((w) => w is CupertinoTextField && w.placeholder == 'Start typing…');
+Finder _contentField() =>
+    find.byWidgetPredicate((w) => w is CupertinoTextField && w.placeholder == 'Start typing… Markdown supported.');
 
 void main() {
   group('NoteDetail - create', () {
@@ -96,6 +98,52 @@ void main() {
 
       expect(find.text('Updated Title'), findsOneWidget);
       expect(find.text('Original Title'), findsNothing);
+    });
+  });
+
+  group('NoteDetail - markdown preview', () {
+    late AppTestSetup setup;
+
+    setUp(() async {
+      setup = await fakeBootstrap();
+      await setup.fakeFirestore.seedNote(
+        title: 'Markdown Note',
+        content: '# Hello World\n\n**Bold** and *italic*',
+        createdAt: DateTime(2026, 6, 10),
+      );
+    });
+
+    testWidgets('shows preview when eye icon is tapped', (tester) async {
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Markdown Note'));
+      await tester.pumpAndSettle();
+
+      expect(_contentField(), findsOneWidget);
+
+      await tester.tap(find.byIcon(CupertinoIcons.eye));
+      await tester.pumpAndSettle();
+
+      expect(_contentField(), findsNothing);
+      expect(find.byType(MarkdownBody), findsOneWidget);
+    });
+
+    testWidgets('returns to edit mode when pencil icon is tapped', (tester) async {
+      await tester.pumpWidget(App(authNotifier: setup.notifier, routes: setup.routes));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Markdown Note'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(CupertinoIcons.eye));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(CupertinoIcons.pencil));
+      await tester.pumpAndSettle();
+
+      expect(_contentField(), findsOneWidget);
+      expect(find.byType(MarkdownBody), findsNothing);
     });
   });
 

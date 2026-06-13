@@ -1,7 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Theme, ThemeData;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inotes/core/di/locator.dart';
 import 'package:inotes/core/ui/ui.dart';
@@ -178,15 +180,36 @@ class _NoteDetailCard extends StatelessWidget {
                   decoration: null,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                CupertinoTextField(
-                  controller: contentController,
-                  placeholder: 'Start typing…',
-                  textCapitalization: TextCapitalization.sentences,
-                  maxLines: 6,
-                  minLines: 3,
-                  style: const TextStyle(fontSize: 15, color: CupertinoColors.label),
-                  placeholderStyle: const TextStyle(fontSize: 15, color: CupertinoColors.placeholderText),
-                  decoration: null,
+                BlocBuilder<NoteDetailCubit, NoteDetailState>(
+                  bloc: cubit,
+                  buildWhen: (prev, curr) {
+                    if (prev is NoteDetailTagsLoaded && curr is NoteDetailTagsLoaded) {
+                      return prev.isPreviewMode != curr.isPreviewMode;
+                    }
+                    return false;
+                  },
+                  builder: (context, state) {
+                    final isPreview = state is NoteDetailTagsLoaded && state.isPreviewMode;
+                    if (isPreview) {
+                      return Theme(
+                        data: ThemeData(),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                          child: MarkdownBody(data: contentController.text, shrinkWrap: true),
+                        ),
+                      );
+                    }
+                    return CupertinoTextField(
+                      controller: contentController,
+                      placeholder: 'Start typing… Markdown supported.',
+                      textCapitalization: TextCapitalization.sentences,
+                      maxLines: 20,
+                      minLines: 3,
+                      style: const TextStyle(fontSize: 15, color: CupertinoColors.label),
+                      placeholderStyle: const TextStyle(fontSize: 15, color: CupertinoColors.placeholderText),
+                      decoration: null,
+                    );
+                  },
                 ),
                 const SizedBox(height: AppSpacing.md),
                 TagPicker(cubit: cubit),
@@ -233,9 +256,20 @@ class _Header extends StatelessWidget {
             bloc: cubit,
             builder: (context, state) {
               final isBusy = state is NoteDetailSaving || state is NoteDetailDeleting;
+              final isPreview = state is NoteDetailTagsLoaded && state.isPreviewMode;
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (!isBusy)
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => cubit.togglePreview(),
+                      child: Icon(
+                        isPreview ? CupertinoIcons.pencil : CupertinoIcons.eye,
+                        color: CupertinoColors.secondaryLabel,
+                        size: 20,
+                      ),
+                    ),
                   if (onDelete != null)
                     CupertinoButton(
                       padding: EdgeInsets.zero,

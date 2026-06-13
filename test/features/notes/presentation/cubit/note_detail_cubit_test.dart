@@ -276,6 +276,49 @@ void main() {
       );
     });
 
+    group('togglePreview', () {
+      blocTest<NoteDetailCubit, NoteDetailState>(
+        'emits isPreviewMode true when toggled on',
+        build: buildCubit,
+        setUp: () {
+          when(() => mockGetTagsUseCase.execute()).thenAnswer((_) async => const Success(tTags));
+        },
+        act: (cubit) async {
+          await cubit.loadTags();
+          cubit.togglePreview();
+        },
+        expect: () => [
+          const NoteDetailTagsLoaded(availableTags: tTags, selectedTagIds: []),
+          const NoteDetailTagsLoaded(availableTags: tTags, selectedTagIds: [], isPreviewMode: true),
+        ],
+      );
+
+      blocTest<NoteDetailCubit, NoteDetailState>(
+        'emits isPreviewMode false when toggled off',
+        build: buildCubit,
+        setUp: () {
+          when(() => mockGetTagsUseCase.execute()).thenAnswer((_) async => const Success(tTags));
+        },
+        act: (cubit) async {
+          await cubit.loadTags();
+          cubit.togglePreview();
+          cubit.togglePreview();
+        },
+        expect: () => [
+          const NoteDetailTagsLoaded(availableTags: tTags, selectedTagIds: []),
+          const NoteDetailTagsLoaded(availableTags: tTags, selectedTagIds: [], isPreviewMode: true),
+          const NoteDetailTagsLoaded(availableTags: tTags, selectedTagIds: []),
+        ],
+      );
+
+      blocTest<NoteDetailCubit, NoteDetailState>(
+        'does nothing when state is not NoteDetailTagsLoaded',
+        build: buildCubit,
+        act: (cubit) => cubit.togglePreview(),
+        expect: () => [],
+      );
+    });
+
     group('delete', () {
       blocTest<NoteDetailCubit, NoteDetailState>(
         'emits [Deleting, Deleted] when delete succeeds',
