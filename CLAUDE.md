@@ -117,6 +117,20 @@ Cubit → UseCase → Repository → (DataSource?)
 
 ## CI/CD
 
+### Git hooks (local)
+
+Hook defined in `.githooks/pre-push`. Activated once per clone via `sh scripts/setup.sh` (runs `git config core.hooksPath .githooks`).
+
+| Step | Command |
+|---|---|
+| Analyze | `flutter analyze` |
+| Test | `flutter test` |
+
+- Runs on every `git push` by default.
+- Can be skipped with `git push --no-verify` — not the project default.
+
+### GitHub Actions (remote)
+
 Pipeline defined in `.github/workflows/ci.yml`, triggered manually via `workflow_dispatch`.
 
 | Job | Command | Depends on |

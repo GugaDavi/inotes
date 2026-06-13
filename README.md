@@ -31,6 +31,9 @@ cp .env.example .env
 # Deploy Firestore security rules
 firebase deploy --only firestore:rules
 
+# Configure git hooks (run once per clone)
+sh scripts/setup.sh
+
 # Run on web
 flutter run -d chrome
 ```
@@ -60,6 +63,18 @@ flutter test test/integration/
 ```
 
 ## CI/CD
+
+### Git hooks (local)
+
+A `pre-push` hook runs `flutter analyze` and `flutter test` before every push. Configure it once per clone with:
+
+```bash
+sh scripts/setup.sh
+```
+
+To skip in exceptional cases: `git push --no-verify`. This is not the project default.
+
+### GitHub Actions (remote)
 
 The project uses GitHub Actions with a manual pipeline (`workflow_dispatch`).
 
