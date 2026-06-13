@@ -11,6 +11,7 @@ Flutter Web notes application (COCUS frontend code challenge).
 | Primary storage | Firebase Firestore |
 | Offline storage | Hive (offline-first features) |
 | Navigation | go_router |
+| Markdown rendering | `flutter_markdown_plus` |
 | Unit tests | `flutter_test` |
 | Integration tests | `flutter_test` (full app widget tests) |
 
@@ -114,6 +115,21 @@ Cubit → UseCase → Repository → (DataSource?)
 - Run: `flutter test test/integration/`
 - **TODO:** Replace `fake_app_bootstrap.dart` with a real bootstrap that connects to a dedicated Firebase test environment. Tests should seed and clean up data via the real Firestore, making integration tests a true end-to-end safety net.
 
+## CI/CD
+
+Pipeline defined in `.github/workflows/ci.yml`, triggered manually via `workflow_dispatch`.
+
+| Job | Command | Depends on |
+|---|---|---|
+| Lint | `flutter analyze` | — |
+| Unit Tests | `flutter test test/core test/features test/services` | — |
+| Integration Tests | `flutter test test/integration` | — |
+| Build Web | `flutter build web --release` | lint + unit tests + integration tests |
+
+- Lint, unit tests, and integration tests run in parallel.
+- Build only runs if all three pass.
+- A `touch .env` step precedes the test and build jobs because `.env` is a declared Flutter asset.
+
 ## Planned Features
 
 | Feature | Status |
@@ -124,6 +140,7 @@ Cubit → UseCase → Repository → (DataSource?)
 | note tagging (default tags, max 3 per note) | done |
 | filter by tag on home screen | done |
 | sort notes (by created/updated, asc/desc) | done |
+| markdown support in note content | done |
 | custom user tags | planned |
 
 ## Firebase

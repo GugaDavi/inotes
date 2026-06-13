@@ -53,11 +53,24 @@ FIREBASE_MEASUREMENT_ID=
 
 ```bash
 # Unit tests
-flutter test
+flutter test test/core test/features test/services
 
 # Integration tests
 flutter test test/integration/
 ```
+
+## CI/CD
+
+The project uses GitHub Actions with a manual pipeline (`workflow_dispatch`).
+
+| Job | Command |
+|---|---|
+| Lint | `flutter analyze` |
+| Unit Tests | `flutter test test/core test/features test/services` |
+| Integration Tests | `flutter test test/integration` |
+| Build Web | `flutter build web --release` |
+
+Lint, unit tests, and integration tests run in parallel. The build job only runs after all three pass.
 
 ## Architecture
 
@@ -113,7 +126,7 @@ lib/
 
 ### Bonus
 
-- [ ] Markdown support in note content
+- [x] Markdown support in note content (preview/edit toggle via eye/pencil icons)
 - [x] Search notes (debounced, runs off main thread via isolate)
 - [x] Filter notes by date (single day and range)
 - [x] Filter notes by tag (unified filter overlay with active filter chips)
