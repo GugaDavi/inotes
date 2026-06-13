@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
-import 'package:inotes/features/shared/filter/date_range_filter.dart';
 
 sealed class HomeState extends Equatable {
   const HomeState();
@@ -21,22 +20,14 @@ final class HomeLoading extends HomeState {
 }
 
 final class HomeLoaded extends HomeState {
-  const HomeLoaded({
-    required this.notes,
-    required this.filteredNotes,
-    required this.sessionCode,
-    this.query = '',
-    this.dateFilter,
-  });
+  const HomeLoaded({required this.notes, required this.filteredNotes, required this.sessionCode});
 
   final List<NoteEntity> notes;
   final List<NoteEntity> filteredNotes;
   final String sessionCode;
-  final String query;
-  final DateRangeFilter? dateFilter;
 
   @override
-  List<Object?> get props => [notes, filteredNotes, sessionCode, query, dateFilter];
+  List<Object?> get props => [notes, filteredNotes, sessionCode];
 }
 
 final class HomeError extends HomeState {

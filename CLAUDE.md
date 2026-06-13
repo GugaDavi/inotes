@@ -40,7 +40,7 @@ lib/
       presentation/     # optional
         pages/          # full route screens
         widgets/        # feature-scoped reusable components
-        cubit/          # XyzCubit + XyzState (one pair per UI context)
+        cubits/         # one subfolder per cubit: cubits/xyz_cubit/ holds XyzCubit + XyzState
     shared/
       formatters/       # shared formatting utilities
       widgets/          # cross-feature reusable components
@@ -78,10 +78,11 @@ Cubit → UseCase → Repository → (DataSource?)
 - Use `Locator.registerLazySingleton` when the repository holds mutable state (e.g. an in-memory cache). Use `registerFactory` for stateless repositories.
 
 ### Cubit
-- One `Cubit` per UI context (e.g. `NotesCubit`, `NoteDetailCubit`).
+- One `Cubit` per UI context (e.g. `HomeCubit`, `FilterCubit`). Each lives in its own subfolder under `presentation/cubits/xyz_cubit/`.
 - States use `sealed class` or `freezed` for exhaustive matching.
 - Cubits have no knowledge of widgets — they receive use cases via constructor.
 - Inline lambdas passed to collaborators (e.g. `NoteSearcher(onResult:)`) must be extracted into named private methods on the cubit for readability.
+- Cubit-to-cubit communication is done via `BlocListener` in the widget layer — cubits never hold references to other cubits. For example, `FilterCubit` emits filter changes and `HomePage` uses a `BlocListener` to call `HomeCubit.handleFilterChange()`.
 
 ### Shared helpers
 - Non-UI, non-domain logic that crosses features lives in `features/shared/`.
@@ -118,8 +119,8 @@ Cubit → UseCase → Repository → (DataSource?)
 | search notes | done |
 | date filter | done |
 | note tagging (default tags, max 3 per note) | done |
+| filter by tag on home screen | done |
 | custom user tags | planned |
-| filter by tag on home screen | planned |
 
 ## Firebase
 

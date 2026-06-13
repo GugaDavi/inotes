@@ -77,7 +77,7 @@ lib/
     auth/         # Session-code auth (start, restore, clear session)
     notes/        # Notes CRUD + tag selection
     tags/         # Default tags seeded to Firestore; in-memory cache
-    home/         # Notes list with search and date filter
+    home/         # Notes list with search, date filter, and tag filter
     shared/
       widgets/    # Reusable UI components (PrimaryButton, CopyButton, …)
       search/     # NoteSearcher — debounced search with isolate filtering
@@ -115,6 +115,6 @@ lib/
 - [ ] Markdown support in note content
 - [x] Search notes (debounced, runs off main thread via isolate)
 - [x] Filter notes by date (single day and range)
-- [ ] Filter notes by tag
+- [x] Filter notes by tag (unified filter overlay with active filter chips)
 - [ ] Sort notes in list view
 - [x] Note tagging — up to 3 tags per note, 7 default tags seeded to Firestore

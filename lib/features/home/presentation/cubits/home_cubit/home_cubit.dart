@@ -2,10 +2,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inotes/core/result/result.dart';
 import 'package:inotes/features/auth/domain/usecases/clear_session_use_case.dart';
 import 'package:inotes/features/auth/domain/usecases/get_current_session_use_case.dart';
-import 'package:inotes/features/home/presentation/cubit/home_state.dart';
+import 'package:inotes/features/home/domain/entities/filter_options_entity.dart';
+import 'package:inotes/features/home/presentation/cubits/home_cubit/home_state.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
 import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
-import 'package:inotes/features/shared/filter/date_range_filter.dart';
 import 'package:inotes/features/shared/search/note_searcher.dart';
 
 class HomeCubit extends Cubit<HomeState> {
@@ -20,7 +20,8 @@ class HomeCubit extends Cubit<HomeState> {
   String? _sessionCode;
   String? get sessionCode => _sessionCode;
 
-  DateRangeFilter? _dateFilter;
+  FilterOptionsEntity? _currentOptions;
+  String _currentQuery = '';
   late final NoteSearcher _searcher;
 
   Future<void> loadNotes() async {
@@ -43,44 +44,43 @@ class HomeCubit extends Cubit<HomeState> {
     final result = await _getNotesUseCase.execute(userId: userId);
     switch (result) {
       case Success(:final value):
-        final filtered = _applyDateFilter(value);
-        emit(HomeLoaded(notes: value, filteredNotes: filtered, sessionCode: userId, dateFilter: _dateFilter));
+        final filtered = _applyFilters(value);
+        emit(HomeLoaded(notes: value, filteredNotes: filtered, sessionCode: userId));
       case Failure():
         emit(const HomeError());
     }
   }
 
-  void _onSearchResult(List<NoteEntity> textFiltered, String query) {
+  void handleFilterChange(FilterOptionsEntity? options) {
+    _currentOptions = options;
     final current = state;
     if (current is! HomeLoaded || isClosed) return;
-    final filtered = _applyDateFilter(textFiltered);
-    emit(
-      HomeLoaded(
-        notes: current.notes,
-        filteredNotes: filtered,
-        sessionCode: current.sessionCode,
-        query: query,
-        dateFilter: _dateFilter,
-      ),
-    );
+    _searcher.search(current.notes, _currentQuery);
   }
 
-  void search(String query) {
+  void applyFilter(String query) {
+    _currentQuery = query;
     final current = state;
-    if (current is! HomeLoaded) return;
+    if (current is! HomeLoaded || isClosed) return;
     _searcher.search(current.notes, query);
   }
 
-  void applyDateFilter(DateRangeFilter? filter) {
+  void _onSearchResult(List<NoteEntity> textFiltered) {
     final current = state;
-    if (current is! HomeLoaded) return;
-    _dateFilter = filter;
-    _searcher.search(current.notes, current.query);
+    if (current is! HomeLoaded || isClosed) return;
+    final filtered = _applyFilters(textFiltered);
+    emit(HomeLoaded(notes: current.notes, filteredNotes: filtered, sessionCode: current.sessionCode));
   }
 
-  List<NoteEntity> _applyDateFilter(List<NoteEntity> notes) {
-    if (_dateFilter == null) return notes;
-    return notes.where((n) => _dateFilter!.matches(n.createdAt)).toList();
+  List<NoteEntity> _applyFilters(List<NoteEntity> notes) {
+    var result = notes;
+    if (_currentOptions?.dateFilter != null) {
+      result = result.where((n) => _currentOptions!.dateFilter!.matches(n.createdAt)).toList();
+    }
+    if (_currentOptions?.tagFilter.isNotEmpty == true) {
+      result = result.where((n) => n.tags.any((t) => _currentOptions!.tagFilter.contains(t.id))).toList();
+    }
+    return result;
   }
 
   Future<void> logout() async {

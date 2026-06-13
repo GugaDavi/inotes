@@ -21,7 +21,7 @@ void main() {
   group('NoteSearcher', () {
     test('calls onResult with notes filtered by title after debounce', () async {
       List<NoteEntity>? result;
-      final searcher = NoteSearcher(onResult: (filtered, _) => result = filtered);
+      final searcher = NoteSearcher(onResult: (filtered) => result = filtered);
 
       searcher.search([tNote, tNote2], 'flutter');
       await Future.delayed(const Duration(milliseconds: 400));
@@ -32,7 +32,7 @@ void main() {
 
     test('calls onResult with notes filtered by content after debounce', () async {
       List<NoteEntity>? result;
-      final searcher = NoteSearcher(onResult: (filtered, _) => result = filtered);
+      final searcher = NoteSearcher(onResult: (filtered) => result = filtered);
 
       searcher.search([tNote, tNote2], 'some content');
       await Future.delayed(const Duration(milliseconds: 400));
@@ -43,7 +43,7 @@ void main() {
 
     test('calls onResult with all notes when query is empty', () async {
       List<NoteEntity>? result;
-      final searcher = NoteSearcher(onResult: (filtered, _) => result = filtered);
+      final searcher = NoteSearcher(onResult: (filtered) => result = filtered);
 
       searcher.search([tNote, tNote2], '');
       await Future.delayed(const Duration(milliseconds: 400));
@@ -54,7 +54,7 @@ void main() {
 
     test('calls onResult with empty list when no note matches', () async {
       List<NoteEntity>? result;
-      final searcher = NoteSearcher(onResult: (filtered, _) => result = filtered);
+      final searcher = NoteSearcher(onResult: (filtered) => result = filtered);
 
       searcher.search([tNote, tNote2], 'xyz123');
       await Future.delayed(const Duration(milliseconds: 400));
@@ -65,13 +65,7 @@ void main() {
 
     test('coalesces rapid calls and only invokes onResult once', () async {
       var callCount = 0;
-      String? lastQuery;
-      final searcher = NoteSearcher(
-        onResult: (_, query) {
-          callCount++;
-          lastQuery = query;
-        },
-      );
+      final searcher = NoteSearcher(onResult: (_) => callCount++);
 
       searcher.search([tNote, tNote2], 'f');
       searcher.search([tNote, tNote2], 'fl');
@@ -80,30 +74,18 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 400));
 
       expect(callCount, 1);
-      expect(lastQuery, 'flutter');
       searcher.dispose();
     });
 
     test('dispose cancels pending search before it fires', () async {
       var called = false;
-      final searcher = NoteSearcher(onResult: (_, __) => called = true);
+      final searcher = NoteSearcher(onResult: (_) => called = true);
 
       searcher.search([tNote], 'flutter');
       searcher.dispose();
       await Future.delayed(const Duration(milliseconds: 400));
 
       expect(called, false);
-    });
-
-    test('passes the query string to onResult', () async {
-      String? resultQuery;
-      final searcher = NoteSearcher(onResult: (_, query) => resultQuery = query);
-
-      searcher.search([tNote, tNote2], 'flutter');
-      await Future.delayed(const Duration(milliseconds: 400));
-
-      expect(resultQuery, 'flutter');
-      searcher.dispose();
     });
   });
 }

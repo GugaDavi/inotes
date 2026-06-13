@@ -6,9 +6,11 @@ import 'package:inotes/features/auth/domain/entities/session_entity.dart';
 import 'package:inotes/features/auth/domain/errors/auth_failures.dart';
 import 'package:inotes/features/auth/domain/usecases/clear_session_use_case.dart';
 import 'package:inotes/features/auth/domain/usecases/get_current_session_use_case.dart';
-import 'package:inotes/features/home/presentation/cubit/home_cubit.dart';
-import 'package:inotes/features/home/presentation/cubit/home_state.dart';
+import 'package:inotes/features/home/domain/entities/filter_options_entity.dart';
+import 'package:inotes/features/home/presentation/cubits/home_cubit/home_cubit.dart';
+import 'package:inotes/features/home/presentation/cubits/home_cubit/home_state.dart';
 import 'package:inotes/features/notes/domain/entities/note_entity.dart';
+import 'package:inotes/features/notes/domain/entities/note_tag_entity.dart';
 import 'package:inotes/features/notes/domain/errors/note_failures.dart';
 import 'package:inotes/features/notes/domain/usecases/get_notes_use_case.dart';
 import 'package:inotes/features/shared/filter/date_range_filter.dart';
@@ -110,6 +112,25 @@ void main() {
         act: (cubit) => cubit.loadNotes(),
         expect: () => [const HomeLoading(), const HomeError()],
       );
+
+      blocTest<HomeCubit, HomeState>(
+        'applies stored filter options when loading notes',
+        build: buildCubit,
+        setUp: () {
+          when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+          when(
+            () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+          ).thenAnswer((_) async => Success([tNote, tNote2]));
+        },
+        act: (cubit) async {
+          cubit.handleFilterChange(FilterOptionsEntity(dateFilter: DateRangeFilter(from: DateTime(2026, 6, 11))));
+          await cubit.loadNotes();
+        },
+        expect: () => [
+          const HomeLoading(),
+          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote2], sessionCode: tSession.code),
+        ],
+      );
     });
 
     group('sessionCode field', () {
@@ -162,181 +183,162 @@ void main() {
       });
     });
 
-    group('search', () {
-      final tLoaded = HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote, tNote2], sessionCode: tSession.code);
-
-      blocTest<HomeCubit, HomeState>(
-        'filters by title case-insensitively after debounce',
-        build: buildCubit,
-        seed: () => tLoaded,
-        act: (cubit) => cubit.search('flutter'),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [
-          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote2], sessionCode: tSession.code, query: 'flutter'),
-        ],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'filters by content case-insensitively after debounce',
-        build: buildCubit,
-        seed: () => tLoaded,
-        act: (cubit) => cubit.search('some content'),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [
-          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote], sessionCode: tSession.code, query: 'some content'),
-        ],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'returns empty filteredNotes when no note matches',
-        build: buildCubit,
-        seed: () => tLoaded,
-        act: (cubit) => cubit.search('xyz123'),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [
-          HomeLoaded(notes: [tNote, tNote2], filteredNotes: const [], sessionCode: tSession.code, query: 'xyz123'),
-        ],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'returns all notes when query is cleared after debounce',
-        build: buildCubit,
-        seed: () =>
-            HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote2], sessionCode: tSession.code, query: 'flutter'),
-        act: (cubit) => cubit.search(''),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [
-          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote, tNote2], sessionCode: tSession.code),
-        ],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'only emits once for multiple rapid calls — debounce coalesces them',
-        build: buildCubit,
-        seed: () => tLoaded,
-        act: (cubit) {
-          cubit.search('f');
-          cubit.search('fl');
-          cubit.search('flu');
-          cubit.search('flutter');
-        },
-        wait: const Duration(milliseconds: 400),
-        expect: () => [
-          HomeLoaded(notes: [tNote, tNote2], filteredNotes: [tNote2], sessionCode: tSession.code, query: 'flutter'),
-        ],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'does nothing when state is not HomeLoaded',
-        build: buildCubit,
-        seed: () => const HomeLoading(),
-        act: (cubit) => cubit.search('anything'),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [],
-      );
-    });
-
-    group('applyDateFilter', () {
-      final noteDay10 = NoteEntity(
+    group('handleFilterChange', () {
+      const tagWork = NoteTagEntity(id: 'tag-work', label: 'Work', color: 0xFF000000);
+      final noteWithTag = NoteEntity(
         id: '10',
         userId: tSession.code,
-        title: 'Day ten',
+        title: 'Tagged',
         content: 'content',
         createdAt: DateTime(2026, 6, 10),
+        tags: const [tagWork],
       );
-      final noteDay11 = NoteEntity(
+      final noteWithoutTag = NoteEntity(
         id: '11',
         userId: tSession.code,
-        title: 'Day eleven',
+        title: 'Flutter tips',
         content: 'content',
         createdAt: DateTime(2026, 6, 11),
       );
-      final noteDay12 = NoteEntity(
-        id: '12',
+      final allNotes = [noteWithTag, noteWithoutTag];
+
+      test('re-filters by date when called with a date filter', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Success(allNotes));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+
+        cubit.handleFilterChange(
+          FilterOptionsEntity(
+            dateFilter: DateRangeFilter(from: DateTime(2026, 6, 10), to: DateTime(2026, 6, 10)),
+          ),
+        );
+
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        expect((cubit.state as HomeLoaded).filteredNotes, [noteWithTag]);
+        cubit.close();
+      });
+
+      test('re-filters by tag when called with a tag filter', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Success(allNotes));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+
+        cubit.handleFilterChange(const FilterOptionsEntity(tagFilter: ['tag-work']));
+
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        expect((cubit.state as HomeLoaded).filteredNotes, [noteWithTag]);
+        cubit.close();
+      });
+
+      test('clears filters and shows all notes when called with null', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Success(allNotes));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+
+        cubit.handleFilterChange(const FilterOptionsEntity(tagFilter: ['tag-work']));
+        await Future.delayed(const Duration(milliseconds: 400));
+        expect((cubit.state as HomeLoaded).filteredNotes, [noteWithTag]);
+
+        cubit.handleFilterChange(null);
+        await Future.delayed(const Duration(milliseconds: 400));
+        expect((cubit.state as HomeLoaded).filteredNotes, allNotes);
+        cubit.close();
+      });
+
+      test('does nothing when state is not HomeLoaded', () async {
+        final cubit = buildCubit();
+        cubit.handleFilterChange(FilterOptionsEntity(dateFilter: DateRangeFilter(from: DateTime(2026, 6, 10))));
+
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        expect(cubit.state, const HomeInitial());
+        cubit.close();
+      });
+
+      test('preserves active text query when filter changes', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Success(allNotes));
+
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+
+        // Apply text query first
+        cubit.applyFilter('flutter');
+        await Future.delayed(const Duration(milliseconds: 400));
+        expect((cubit.state as HomeLoaded).filteredNotes, [noteWithoutTag]);
+
+        // Now apply tag filter — should still respect the query
+        cubit.handleFilterChange(const FilterOptionsEntity(tagFilter: ['tag-work']));
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        // "Flutter tips" matches text but not tag; "Tagged" matches tag but not text
+        expect((cubit.state as HomeLoaded).filteredNotes, isEmpty);
+        cubit.close();
+      });
+    });
+
+    group('applyFilter', () {
+      const tagWork = NoteTagEntity(id: 'tag-work', label: 'Work', color: 0xFF000000);
+      final noteWithTag = NoteEntity(
+        id: '10',
         userId: tSession.code,
-        title: 'Day twelve',
+        title: 'Tagged',
         content: 'content',
-        createdAt: DateTime(2026, 6, 12),
+        createdAt: DateTime(2026, 6, 10),
+        tags: const [tagWork],
       );
-      final allNotes = [noteDay10, noteDay11, noteDay12];
-      final tLoaded = HomeLoaded(notes: allNotes, filteredNotes: allNotes, sessionCode: tSession.code);
+      final noteWithoutTag = NoteEntity(
+        id: '11',
+        userId: tSession.code,
+        title: 'Flutter tips',
+        content: 'content',
+        createdAt: DateTime(2026, 6, 11),
+      );
+      final allNotes = [noteWithTag, noteWithoutTag];
 
-      blocTest<HomeCubit, HomeState>(
-        'filters to a single day',
-        build: buildCubit,
-        seed: () => tLoaded,
-        act: (cubit) => cubit.applyDateFilter(DateRangeFilter(from: DateTime(2026, 6, 11))),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [
-          HomeLoaded(
-            notes: allNotes,
-            filteredNotes: [noteDay11],
-            sessionCode: tSession.code,
-            dateFilter: DateRangeFilter(from: DateTime(2026, 6, 11)),
-          ),
-        ],
-      );
+      test('filters notes by text query after debounce', () async {
+        when(() => mockGetSessionUseCase.execute()).thenAnswer((_) async => const Success(tSession));
+        when(
+          () => mockGetNotesUseCase.execute(userId: any(named: 'userId')),
+        ).thenAnswer((_) async => Success(allNotes));
 
-      blocTest<HomeCubit, HomeState>(
-        'filters by date range (inclusive boundaries)',
-        build: buildCubit,
-        seed: () => tLoaded,
-        act: (cubit) => cubit.applyDateFilter(DateRangeFilter(from: DateTime(2026, 6, 10), to: DateTime(2026, 6, 11))),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [
-          HomeLoaded(
-            notes: allNotes,
-            filteredNotes: [noteDay10, noteDay11],
-            sessionCode: tSession.code,
-            dateFilter: DateRangeFilter(from: DateTime(2026, 6, 10), to: DateTime(2026, 6, 11)),
-          ),
-        ],
-      );
+        final cubit = buildCubit();
+        await cubit.loadNotes();
+        expect((cubit.state as HomeLoaded).filteredNotes, allNotes);
 
-      blocTest<HomeCubit, HomeState>(
-        'clears filter and returns all notes when null is passed',
-        build: buildCubit,
-        seed: () => HomeLoaded(
-          notes: allNotes,
-          filteredNotes: [noteDay11],
-          sessionCode: tSession.code,
-          dateFilter: DateRangeFilter(from: DateTime(2026, 6, 11)),
-        ),
-        act: (cubit) => cubit.applyDateFilter(null),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [HomeLoaded(notes: allNotes, filteredNotes: allNotes, sessionCode: tSession.code)],
-      );
+        cubit.applyFilter('flutter');
 
-      blocTest<HomeCubit, HomeState>(
-        'combined: text search and date filter intersect',
-        build: buildCubit,
-        seed: () => HomeLoaded(
-          notes: [tNote, tNote2],
-          filteredNotes: [tNote, tNote2],
-          sessionCode: tSession.code,
-          query: 'note',
-        ),
-        act: (cubit) => cubit.applyDateFilter(DateRangeFilter(from: DateTime(2026, 6, 10))),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [
-          HomeLoaded(
-            notes: [tNote, tNote2],
-            filteredNotes: [tNote],
-            sessionCode: tSession.code,
-            query: 'note',
-            dateFilter: DateRangeFilter(from: DateTime(2026, 6, 10)),
-          ),
-        ],
-      );
+        await Future.delayed(const Duration(milliseconds: 400));
 
-      blocTest<HomeCubit, HomeState>(
-        'does nothing when state is not HomeLoaded',
-        build: buildCubit,
-        seed: () => const HomeLoading(),
-        act: (cubit) => cubit.applyDateFilter(DateRangeFilter(from: DateTime(2026, 6, 10))),
-        wait: const Duration(milliseconds: 400),
-        expect: () => [],
-      );
+        expect((cubit.state as HomeLoaded).filteredNotes, [noteWithoutTag]);
+        cubit.close();
+      });
+
+      test('does nothing when state is not HomeLoaded', () async {
+        final cubit = buildCubit();
+        cubit.applyFilter('flutter');
+
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        expect(cubit.state, const HomeInitial());
+        cubit.close();
+      });
     });
 
     group('logout', () {
