@@ -1,12 +1,8 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inotes/features/shared/widgets/date_mask_formatter.dart';
 
 TextEditingValue format(String newText, {String oldText = ''}) {
-  return DateMaskFormatter().formatEditUpdate(
-    TextEditingValue(text: oldText),
-    TextEditingValue(text: newText),
-  );
+  return DateMaskFormatter().formatEditUpdate(TextEditingValue(text: oldText), TextEditingValue(text: newText));
 }
 
 void main() {
