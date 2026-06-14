@@ -9,7 +9,7 @@ Flutter Web notes application (COCUS frontend code challenge).
 | Framework | Flutter Web |
 | State management | Cubit (`flutter_bloc`) |
 | Primary storage | Firebase Firestore |
-| Offline storage | Hive (offline-first features) |
+| Session storage | `shared_preferences` |
 | Navigation | go_router |
 | Markdown rendering | `flutter_markdown_plus` |
 | Unit tests | `flutter_test` |
@@ -35,7 +35,7 @@ lib/
         repositories/   # abstract repository interfaces
         usecases/       # one use case per file, dependencies injected via constructor
       data/             # optional
-        models/         # DTOs with toJson/fromJson (Firebase, Hive)
+        models/         # DTOs with toJson/fromJson (Firestore)
         datasources/    # Firestore or Hive calls
         repositories/   # concrete implementations of domain interfaces
       presentation/     # optional
@@ -63,7 +63,7 @@ Cubit → UseCase → Repository → (DataSource?)
 
 - Cubits only call use cases — never repositories or datasources directly.
 - Use cases only call repositories — never datasources directly.
-- Repositories call datasources **only when there are multiple data sources** (e.g. Firestore + local Hive cache). If the repository talks to a single source, it calls it directly — no datasource abstraction needed.
+- Repositories call datasources **only when there are multiple data sources** (e.g. remote + local cache). If the repository talks to a single source, it calls it directly — no datasource abstraction needed.
 
 ### Domain
 - Entities are pure Dart classes — no `toJson`/`fromJson`. Name them with the `Entity` suffix (e.g. `NoteEntity`, `NoteTagEntity`).
